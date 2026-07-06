@@ -126,7 +126,6 @@ const HeroSection = () => {
       {/* Scroll Indicator */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce-slow">
         <a href="#about" className="flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors">
-          <span className="text-sm mb-2">Scroll Down</span>
           <ChevronDown size={24} />
         </a>
       </div>
