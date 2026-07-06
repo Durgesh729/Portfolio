@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zig-Zag Scroll Hero</title>
+
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0B0C10;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --accent: #66FCF1;
+            --text-main: #FFFFFF;
+            --text-muted: #C5C6C7;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        section {
+            position: relative;
+        }
+
+        /* --- Spacers --- */
+        #about,
+        #projects {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #about {
+            background: linear-gradient(to bottom, #000, #111);
+        }
+
+        #projects {
+            background: linear-gradient(to top, #000, #111);
+        }
+
+        /* --- Skills Section (Pinned) --- */
+        #skills {
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            /* Background gradient or image */
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
+        }
+
+        .skills-rail {
+            display: flex;
+            gap: 10vw;
+            /* Space between cards */
+            padding: 15vh 50vw 0;
+            /* Center the first/last items: 50vw - halfCardWidth roughly */
+            /* Note: We will adjust initial position in JS or rely on flex layout + scroll logic */
+            box-sizing: border-box;
+            will-change: transform;
+            align-items: center;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        /* --- Card Styling --- */
+        .skill-card {
+            position: relative;
+            width: 280px;
+            height: 380px;
+            flex-shrink: 0;
+            border-radius: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 2rem;
+            transform-style: preserve-3d;
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .skill-card:hover {
+            box-shadow: 0 0 30px rgba(102, 252, 241, 0.2);
+        }
+
+        /* Neon Border Effect */
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            padding: 2px;
+            background: linear-gradient(45deg, #e81cff, #40c9ff);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.7;
+        }
+
+        .skill-card h2 {
+            margin: 0;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transform: translateZ(20px);
+        }
+
+        .card-category {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-bg-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            max-height: 60%;
+            object-fit: contain;
+            opacity: 0.2;
+            z-index: -1;
+            filter: grayscale(100%);
+            transition: filter 0.3s ease, opacity 0.3s ease;
+        }
+
+        .skill-card:hover .card-bg-icon {
+            filter: grayscale(0%);
+            opacity: 0.4;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Intro -->
+    <section id="about">
+        <div>
+            <h1>About Me</h1>
+            <p style="font-size: 1rem; opacity: 0.7; text-align: center;">Scroll down to see skills</p>
+        </div>
+    </section>
+
+    <!-- Pinned Skills Rail -->
+    <section id="skills">
+        <div class="skills-rail">
+
+            <!-- 1. Python -->
+            <article class="skill-card" data-skill="python">
+                <img src="../public/images/skills/python_icon.png" alt="Python" class="card-bg-icon">
+                <div class="card-category">Programming</div>
+                <h2>Python</h2>
+            </article>
+
+            <!-- 2. SQL -->
+            <article class="skill-card" data-skill="sql">
+                <img src="../public/images/skills/sql_logo.png" alt="SQL" class="card-bg-icon">
+                <div class="card-category">AI / ML Technologies</div>
+                <h2>SQL</h2>
+            </article>
+
+            <!-- 3. NumPy -->
+            <article class="skill-card" data-skill="numpy">
+                <img src="../public/images/skills/numpy_logo.png" alt="NumPy" class="card-bg-icon">
+                <div class="card-category">Data Science</div>
+                <h2>NumPy</h2>
+            </article>
+
+            <!-- 3. Pandas -->
+            <article class="skill-card" data-skill="pandas">
+                <img src="../public/images/skills/pandas_logo.png" alt="Pandas" class="card-bg-icon">
+                <div class="card-category">Data Science</div>
+                <h2>Pandas</h2>
+            </article>
+
+            <!-- 4. Matplotlib -->
+            <article class="skill-card" data-skill="Matplotlib">
+                <img src="../public/images/skills/matplotlib_logo.png" alt="Matplotlib" class="card-bg-icon">
+                <div class="card-category">AI / ML Technologies</div>
+                <h2>Matplotlib</h2>
+            </article>
+
+            <!-- 5. GitHub -->
+            <article class="skill-card" data-skill="github">
+                <img src="../public/images/skills/github_logo.png" alt="GitHub" class="card-bg-icon">
+                <div class="card-category">Tools & Platforms</div>
+                <h2>GitHub</h2>
+            </article>
+
+            <!-- 6. FastAPI -->
+            <article class="skill-card" data-skill="fastapi">
+                <img src="../public/images/skills/fastapi_logo.png" alt="FastAPI" class="card-bg-icon">
+                <div class="card-category">Tools & Platforms</div>
+                <h2>FastAPI</h2>
+            </article>
+
+            <!-- 7. Docker (Last) -->
+            <article class="skill-card" data-skill="docker">
+                <img src="../public/images/skills/docker_logo.png" alt="Docker" class="card-bg-icon">
+                <div class="card-category">DevOps</div>
+                <h2>Docker</h2>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- Outro -->
+    <section id="projects">
+        <h1>Projects</h1>
+    </section>
+
+    <!-- Modules -->
+    <script type="module">
+        import { initZigZagSkillRail } from './zigzag.js';
+
+        // Initialize after DOM load
+        window.addEventListener('DOMContentLoaded', () => {
+            initZigZagSkillRail({
+                containerSelector: '#skills',
+                railSelector: '.skills-rail',
+                cardSelector: '.skill-card',
+                // Optional configuration overrides
+                snap: true
+            });
+        });
+    </script>
+
+</body>
+
+</html>

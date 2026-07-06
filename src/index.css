@@ -41,13 +41,13 @@
     --gradient-hero: linear-gradient(135deg, hsl(220, 30%, 5%) 0%, hsl(240, 25%, 12%) 50%, hsl(220, 30%, 5%) 100%);
     --gradient-card: linear-gradient(135deg, hsl(220, 30%, 10%) 0%, hsl(230, 25%, 12%) 100%);
     --gradient-glow: radial-gradient(ellipse at center, hsl(225, 73%, 57%, 0.15) 0%, transparent 70%);
-    
+
     --glass-bg: hsl(220, 30%, 10%, 0.6);
     --glass-border: hsl(220, 20%, 25%, 0.5);
-    
+
     --shadow-glow: 0 0 60px hsl(225, 73%, 57%, 0.2);
     --shadow-card: 0 8px 32px hsl(0, 0%, 0%, 0.3);
-    
+
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
@@ -60,6 +60,7 @@
 
   html {
     scroll-behavior: smooth;
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -75,8 +76,7 @@
   }
 
   .gradient-text {
-    @apply bg-clip-text text-transparent;
-    background-image: var(--gradient-primary);
+    color: #464bc4;
   }
 
   .gradient-border {
@@ -98,6 +98,9 @@
 
   .hover-lift {
     @apply transition-all duration-300;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .hover-lift:hover {
@@ -155,12 +158,29 @@
     animation: progressFill 1.5s ease-out forwards;
   }
 
-  .animation-delay-100 { animation-delay: 100ms; }
-  .animation-delay-200 { animation-delay: 200ms; }
-  .animation-delay-300 { animation-delay: 300ms; }
-  .animation-delay-400 { animation-delay: 400ms; }
-  .animation-delay-500 { animation-delay: 500ms; }
-  .animation-delay-600 { animation-delay: 600ms; }
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
+
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
 }
 
 @keyframes fadeUp {
@@ -168,6 +188,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -175,8 +196,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideInLeft {
@@ -184,6 +210,7 @@
     opacity: 0;
     transform: translateX(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -195,6 +222,7 @@
     opacity: 0;
     transform: translateX(30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -202,18 +230,24 @@
 }
 
 @keyframes bounceSlow {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
 }
 
 @keyframes pulseGlow {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.5;
   }
+
   50% {
     opacity: 1;
   }
@@ -241,4 +275,93 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground));
+}
+
+.traits-card {
+  width: 100%;
+  /* Changed from fixed 380px to be responsive */
+  max-width: 600px;
+  /* Limit width on larger screens if needed, or remove for full width */
+  height: 260px;
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  background: #0D1018;
+  /* User's custom background */
+  border-radius: 12px;
+}
+
+/* vertical cards */
+.traits-card-item {
+  flex: 1;
+  position: relative;
+  border: 1px solid #5a60ff;
+  border-radius: 6px;
+  background: #212121;
+  cursor: pointer;
+  transition: flex 0.5s ease;
+  overflow: hidden;
+}
+
+/* expand horizontally */
+.traits-card-item:hover {
+  flex: 6;
+}
+
+/* title text */
+.traits-card-item .title {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  transform-origin: center;
+
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  transition: transform 0.5s ease;
+}
+
+
+/* rotate title horizontally on hover */
+.traits-card-item:hover .title {
+  transform: translate(-50%, -70%) rotate(0);
+}
+
+/* description (hidden initially) */
+.traits-card-item::after {
+  content: attr(data-desc);
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  transform: translate(-50%, 10px);
+
+  width: 90%;
+  /* Increased from 80% to give more room */
+  text-align: center;
+  font-size: 0.85rem;
+  color: #bfc3ff;
+  line-height: 1.4;
+
+  opacity: 0;
+  transition: all 0.4s ease;
+}
+
+/* show description on hover */
+.traits-card-item:hover::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* GPU Hardware Acceleration for heavy animation nodes */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
 }

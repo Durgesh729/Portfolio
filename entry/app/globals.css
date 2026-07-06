@@ -1,0 +1,258 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+nextjs-portal,
+#__next-build-watcher,
+.nextjs-static-indicator-container {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+
+/* ================= LAPTOP BASE ================= */
+.laptop {
+  transform-origin: 50% 159px;
+  will-change: transform;
+}
+
+.screen {
+  border-radius: 20px;
+  box-shadow: inset 0 0 0 2px #c8cacb, inset 0 0 0 10px #000;
+  height: 318px;
+  width: 518px;
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: linear-gradient(
+    15deg,
+    #000000ff 0%,
+    #000000ff 13%,
+    #000000ff 25%,
+    #000000ff 38%,
+    #000000ff 50%,
+    #000000ff 62%,
+    #000000ff 75%,
+    #000000ff 87%,
+    #000000ff 100%
+  );
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+  animation: open 4s ease-out forwards;
+  overflow: hidden;
+  backface-visibility: hidden;
+  transition: border-radius 1.5s cubic-bezier(0.6, 0.05, -0.01, 0.9),
+              box-shadow 1.5s cubic-bezier(0.6, 0.05, -0.01, 0.9);
+}
+
+.screen.expanding {
+  transform-style: preserve-3d;
+  border-radius: 0px;
+  box-shadow: inset 0 0 0 0px #c8cacb, inset 0 0 0 0px #000;
+}
+
+@keyframes open {
+  from {
+    transform: perspective(1900px) rotateX(-88.5deg);
+  }
+  to {
+    transform: perspective(1000px) rotateX(0deg);
+  }
+}
+
+/* ================= CONTENT ================= */
+.content-container {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.screen.expanding .content-container {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s ease 1.0s, visibility 0.5s ease 1.0s;
+}
+
+.scaled-content-wrapper {
+  background: #000;
+  flex-shrink: 0;
+}
+
+/* ================= TERMINAL LOADER ================= */
+.terminal-loader {
+  border: 0.1em solid #333;
+  background-color: #1a1a1a;
+  color: #0f0;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1em;
+  padding: 1.5em 1em;
+  width: 25em;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  position: absolute;
+  z-index: 10;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+
+.screen.expanding .terminal-loader {
+  opacity: 0;
+}
+
+.terminal-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1.5em;
+  background-color: #333;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  padding: 0 0.4em;
+  box-sizing: border-box;
+}
+
+.terminal-controls {
+  float: right;
+}
+
+.control {
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  margin-left: 0.4em;
+  border-radius: 50%;
+  background-color: #777;
+}
+
+.control.close {
+  background-color: #e33;
+}
+
+.control.minimize {
+  background-color: #ee0;
+}
+
+.control.maximize {
+  background-color: #0b0;
+}
+
+.terminal-title {
+  float: left;
+  line-height: 1.5em;
+  color: #eee;
+}
+
+.text {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 0.2em solid green;
+  animation:
+    typeAndDelete 4s steps(20) infinite,
+    blinkCursor 0.5s step-end infinite alternate;
+  margin-top: 1.5em;
+  color: #0f0;
+}
+
+@keyframes blinkCursor {
+  50% {
+    border-right-color: transparent;
+  }
+}
+
+@keyframes typeAndDelete {
+  0%,
+  5% {
+    width: 0;
+  }
+  45%,
+  70% {
+    width: 34ch; /* Fits "Initializing Durgesh's Portfolio..." */
+  }
+  90%,
+  100% {
+    width: 0;
+  }
+}
+
+/* ================= HEADER (camera notch) ================= */
+.header {
+  width: 100px;
+  height: 12px;
+  position: absolute;
+  background-color: #000;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 0 0 6px 6px;
+  transition: opacity 0.8s;
+  z-index: 20;
+}
+
+.screen.expanding .header {
+  opacity: 0;
+}
+
+/* ================= KEYBOARD ================= */
+.keyboard {
+  background: radial-gradient(circle at center, #e2e3e4 85%, #a9abac 100%);
+  border: solid #a0a3a7;
+  border-radius: 2px 2px 12px 12px;
+  border-width: 1px 2px 0 2px;
+  box-shadow: inset 0 -2px 8px 0 #6c7074;
+  height: 24px;
+  margin-top: -10px;
+  width: 620px;
+  transition: opacity 0.5s;
+}
+
+.laptop.expanding .keyboard {
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in-content {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+

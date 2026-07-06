@@ -1,0 +1,184 @@
+/* #root constraints removed */
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* === removing default button style ===*/
+.button {
+  margin: 0;
+  height: auto;
+  background: transparent;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
+
+/* button styling */
+.button {
+  --border-right: 2px;
+  --text-stroke-color: rgba(42, 154, 251, 0.5);
+  --animation-color: #af37ff;
+  --fs-size: 1.2rem;
+  letter-spacing: 2px;
+  text-decoration: none;
+  font-size: var(--fs-size);
+  font-family: inherit;
+  position: relative;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--text-stroke-color);
+  line-height: normal;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+/* Base hover-text styles */
+.hover-text {
+  position: absolute;
+  box-sizing: border-box;
+  content: attr(data-text);
+  color: var(--animation-color);
+  width: 0%;
+  inset: 0;
+  border-right: var(--border-right) solid var(--animation-color);
+  overflow: hidden;
+  -webkit-text-stroke: 1px var(--animation-color);
+  white-space: nowrap;
+}
+
+/* 
+   Sequenced Animations
+   Total Cycle: 6 seconds.
+   Steps:
+   0-1s: Item 1 Fill (0-16.66%)
+   1-2s: Item 2 Fill (16.66-33.33%)
+   2-3s: Item 3 Fill (33.33-50%)
+   3-4s: Item 3 Empty (50-66.66%)
+   4-5s: Item 2 Empty (66.66-83.33%)
+   5-6s: Item 1 Empty (83.33-100%)
+*/
+
+/* Item 1: Deep Learning */
+@keyframes seq-1 {
+  0% {
+    width: 0%;
+  }
+
+  16.666% {
+    width: 100%;
+    filter: drop-shadow(0 0 23px var(--animation-color));
+  }
+
+  83.333% {
+    width: 100%;
+    filter: drop-shadow(0 0 23px var(--animation-color));
+  }
+
+  100% {
+    width: 0%;
+    filter: none;
+  }
+}
+
+/* Item 2: TensorFlow */
+@keyframes seq-2 {
+
+  0%,
+  16.666% {
+    width: 0%;
+  }
+
+  33.333% {
+    width: 100%;
+    filter: drop-shadow(0 0 23px var(--animation-color));
+  }
+
+  66.666% {
+    width: 100%;
+    filter: drop-shadow(0 0 23px var(--animation-color));
+  }
+
+  83.333% {
+    width: 0%;
+    filter: none;
+  }
+
+  100% {
+    width: 0%;
+  }
+}
+
+/* Item 3: Neural Network */
+@keyframes seq-3 {
+
+  0%,
+  33.333% {
+    width: 0%;
+  }
+
+  50% {
+    width: 100%;
+    filter: drop-shadow(0 0 23px var(--animation-color));
+  }
+
+  50.01% {
+    /* Slight hold peak if needed, or just start turning back */
+  }
+
+  66.666% {
+    width: 0%;
+    filter: none;
+  }
+
+  100% {
+    width: 0%;
+  }
+}
+
+/* Apply animations to the specific children */
+.learning-container>div:nth-child(1) .hover-text {
+  animation: seq-1 6s infinite ease-in-out;
+}
+
+.learning-container>div:nth-child(2) .hover-text {
+  animation: seq-2 6s infinite ease-in-out;
+}
+
+.learning-container>div:nth-child(3) .hover-text {
+  animation: seq-3 6s infinite ease-in-out;
+}

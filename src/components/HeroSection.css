@@ -1,0 +1,84 @@
+/* Floating Objects Animation */
+@keyframes float {
+    0% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(5deg);
+    }
+
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+}
+
+.floating-obj {
+    position: absolute;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 1;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+}
+
+.floating-headphone {
+    top: 10%;
+    right: 35%;
+    width: 120px;
+    animation: float 6s ease-in-out infinite;
+}
+
+.floating-laptop {
+    bottom: 20%;
+    left: 10%;
+    width: 150px;
+    animation: float 7s ease-in-out infinite reverse;
+}
+
+.floating-ai {
+    top: 15%;
+    left: 40%;
+    width: 100px;
+    animation: float 8s ease-in-out infinite 1s;
+}
+
+
+/* Custom Font Class */
+.hero-custom-font {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    /* Fallback or specific font */
+    letter-spacing: 0.02em;
+}
+
+
+body.scroll-lock {
+  overflow: hidden !important;
+  height: 100vh !important;
+}
+
+.hero-section {
+  position: relative;
+  z-index: 1;
+  background: #d6d7d7;
+}
+
+.hero-section canvas {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.curve {
+  position: absolute;
+  bottom: -1px;
+  width: 100%;
+  height: 150px;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.curve svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zig-Zag Scroll Hero - Premium Dark Theme</title>
+
+    <!-- GSAP + ScrollTrigger -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+    <style>
+        /* ============================================
+       CSS VARIABLES & RESET
+    ============================================ */
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --card-glass: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-lime: #00ff88;
+            --accent-cyan: #00d9ff;
+
+            /* Responsive Y amplitudes */
+            --y-amplitude: 60px;
+        }
+
+        @media (max-width: 1024px) {
+            :root {
+                --y-amplitude: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --y-amplitude: 14px;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ============================================
+       BACKGROUND WITH GRAIN & VIGNETTE
+    ============================================ */
+        .page-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 0%, var(--bg-secondary), var(--bg-dark));
+        }
+
+        .page-background::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .page-background::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.6) 100%);
+            pointer-events: none;
+        }
+
+        /* ============================================
+       INTRO & OUTRO SPACERS
+    ============================================ */
+        .intro-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .intro-section h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-lime), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .intro-section p {
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            color: var(--text-muted);
+            max-width: 600px;
+        }
+
+        .scroll-indicator {
+            margin-top: 3rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(10px);
+            }
+        }
+
+        .outro-section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .outro-section h2 {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 700;
+            color: var(--accent-lime);
+        }
+
+        /* ============================================
+       PINNED HERO SECTION
+    ============================================ */
+        .hero-pin-container {
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cards-track {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            gap: 4rem;
+            padding: 0 10vw;
+        }
+
+        @media (max-width: 768px) {
+            .cards-track {
+                gap: 2rem;
+                padding: 0 5vw;
+            }
+        }
+
+        /* ============================================
+       CARD STYLING - GLASS MORPHISM
+    ============================================ */
+        .hero-card {
+            position: relative;
+            width: clamp(300px, 80vh, 600px);
+            height: clamp(400px, 70vh, 700px);
+            flex-shrink: 0;
+            border-radius: 24px;
+            background: var(--card-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
+            transition: box-shadow 0.3s cubic-bezier(.2, .9, .2, 1);
+            cursor: pointer;
+            outline: none;
+        }
+
+        @media (max-width: 768px) {
+            .hero-card {
+                width: 85vw;
+                height: 60vh;
+                border-radius: 18px;
+            }
+        }
+
+        /* Gradient overlay for depth */
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg,
+                    rgba(0, 255, 136, 0.03) 0%,
+                    transparent 50%,
+                    rgba(0, 217, 255, 0.03) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Neon glow effect */
+        .hero-card::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--accent-lime), var(--accent-cyan));
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+            filter: blur(12px);
+        }
+
+        .hero-card:hover::after,
+        .hero-card:focus::after {
+            opacity: 0.6;
+        }
+
+        .hero-card:hover {
+            box-shadow:
+                0 16px 48px rgba(0, 0, 0, 0.6),
+                0 0 80px rgba(0, 255, 136, 0.2);
+            transform: translate3d(0, 0, 0) scale(1.02) !important;
+        }
+
+        .hero-card:focus {
+            outline: 2px solid var(--accent-lime);
+            outline-offset: 4px;
+        }
+
+        /* Card background image */
+        .card-bg-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 60%;
+            object-fit: contain;
+            opacity: 0.15;
+            z-index: 0;
+            pointer-events: none;
+            filter: drop-shadow(0 0 40px rgba(0, 255, 136, 0.3));
+        }
+
+        /* Card content */
+        .card-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: clamp(2rem, 4vw, 3rem);
+            background: linear-gradient(to top,
+                    rgba(0, 0, 0, 0.8) 0%,
+                    transparent 60%);
+        }
+
+        .card-category {
+            font-family: 'Courier New', monospace;
+            font-size: clamp(0.8rem, 1.5vw, 1rem);
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .card-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-description {
+            font-size: clamp(1rem, 1.8vw, 1.2rem);
+            color: var(--text-muted);
+            line-height: 1.6;
+            max-width: 90%;
+        }
+
+        /* ============================================
+       PROGRESS INDICATOR
+    ============================================ */
+        .progress-dots {
+            position: fixed;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 50px;
+            border: 1px solid var(--card-border);
+        }
+
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--card-border);
+            transition: all 0.3s cubic-bezier(.2, .9, .2, 1);
+        }
+
+        .progress-dot.active {
+            background: var(--accent-lime);
+            box-shadow: 0 0 12px var(--accent-lime);
+            transform: scale(1.3);
+        }
+
+        /* ============================================
+       REDUCED MOTION FALLBACK
+    ============================================ */
+        @media (prefers-reduced-motion: reduce) {
+            .hero-card {
+                transform: translateX(0) !important;
+                opacity: 1 !important;
+            }
+
+            .scroll-indicator {
+                animation: none;
+            }
+
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ============================================
+       ACCESSIBILITY
+    ============================================ */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background -->
+    <div class="page-background"></div>
+
+    <!-- Intro Section -->
+    <section class="intro-section">
+        <h1>Technology Showcase</h1>
+        <p>Experience a cinematic journey through modern development tools with scroll-driven zig-zag motion</p>
+        <div class="scroll-indicator">↓ Scroll to explore ↓</div>
+    </section>
+
+    <!-- Pinned Hero Section -->
+    <section class="hero-pin-container" aria-label="Technology showcase" role="region">
+        <div class="cards-track" role="list">
+
+            <!-- Card 1: Python -->
+            <article class="hero-card" role="listitem" tabindex="0" aria-label="Python programming language">
+                <img src="images/python_icon.png" alt="" class="card-bg-image" loading="lazy">
+                <div class="card-content">
+                    <div class="card-category">Programming</div>
+                    <h2 class="card-title">Python</h2>
+                    <p class="card-description">The versatile language powering AI, data science, and modern web
+                        applications.</p>
+                </div>
+            </article>
+
+            <!-- Card 2: NumPy -->
+            <article class="hero-card" role="listitem" tabindex="0" aria-label="NumPy library">
+                <img src="images/numpy_logo.png" alt="" class="card-bg-image" loading="lazy">
+                <div class="card-content">
+                    <div class="card-category">AI / ML Technologies</div>
+                    <h2 class="card-title">NumPy</h2>
+                    <p class="card-description">Architecting the future through structured chaos and algorithmic beauty.
+                    </p>
+                </div>
+            </article>
+
+            <!-- Card 3: Pandas -->
+            <article class="hero-card" role="listitem" tabindex="0" aria-label="Pandas library">
+                <img src="images/pandas_logo.png" alt="" class="card-bg-image" loading="lazy">
+                <div class="card-content">
+                    <div class="card-category">AI / ML Technologies</div>
+                    <h2 class="card-title">Pandas</h2>
+                    <p class="card-description">Connecting dots in a vast space of infinite possibilities and recurring
+                        patterns.</p>
+                </div>
+            </article>
+
+            <!-- Card 4: Streamlit -->
+            <article class="hero-card" role="listitem" tabindex="0" aria-label="Streamlit framework">
+                <img src="images/streamlit_logo.png" alt="" class="card-bg-image" loading="lazy">
+                <div class="card-content">
+                    <div class="card-category">AI / ML Technologies</div>
+                    <h2 class="card-title">Streamlit</h2>
+                    <p class="card-description">Transform data scripts into beautiful interactive applications
+                        effortlessly.</p>
+                </div>
+            </article>
+
+            <!-- Card 5: GitHub -->
+            <article class="hero-card" role="listitem" tabindex="0" aria-label="GitHub platform">
+                <img src="images/github_logo.png" alt="" class="card-bg-image" loading="lazy">
+                <div class="card-content">
+                    <div class="card-category">Tools & Platforms</div>
+                    <h2 class="card-title">Git / GitHub</h2>
+                    <p class="card-description">Stepping beyond the boundaries of known reality into collaborative
+                        innovation.</p>
+                </div>
+            </article>
+
+            <!-- Card 6: MongoDB -->
+            <article class="hero-card" role="listitem" tabindex="0" aria-label="MongoDB database">
+                <img src="images/mongodb_logo.png" alt="" class="card-bg-image" loading="lazy">
+                <div class="card-content">
+                    <div class="card-category">Tools & Platforms</div>
+                    <h2 class="card-title">MongoDB</h2>
+                    <p class="card-description">The final frontier where all parallel lines eventually converge.</p>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- Progress Dots -->
+    <div class="progress-dots" aria-hidden="true">
+        <div class="progress-dot" data-index="0"></div>
+        <div class="progress-dot" data-index="1"></div>
+        <div class="progress-dot" data-index="2"></div>
+        <div class="progress-dot" data-index="3"></div>
+        <div class="progress-dot" data-index="4"></div>
+        <div class="progress-dot" data-index="5"></div>
+    </div>
+
+    <!-- Outro Section -->
+    <section class="outro-section">
+        <h2>Ready to build together?</h2>
+    </section>
+
+    <script>
+        // ============================================
+        // GSAP SCROLLTRIGGER SETUP
+        // ============================================
+
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Check for reduced motion preference
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (!prefersReducedMotion) {
+            const cards = gsap.utils.toArray('.hero-card');
+            const numberOfCards = cards.length;
+            const pinContainer = document.querySelector('.hero-pin-container');
+            const track = document.querySelector('.cards-track');
+
+            // Responsive Y amplitude
+            const getYAmplitude = () => {
+                const width = window.innerWidth;
+                if (width <= 768) return 14;
+                if (width <= 1024) return 30;
+                return 60;
+            };
+
+            let yAmplitude = getYAmplitude();
+
+            // Update on resize
+            window.addEventListener('resize', () => {
+                yAmplitude = getYAmplitude();
+            });
+
+            // ============================================
+            // MAIN SCROLLTRIGGER - PIN & HORIZONTAL SCROLL
+            // ============================================
+
+            const totalPinnedHeight = window.innerHeight * numberOfCards;
+
+            ScrollTrigger.create({
+                trigger: pinContainer,
+                start: 'top top',
+                end: () => `+=${totalPinnedHeight}`,
+                pin: true,
+                anticipatePin: 1,
+                scrub: 1,
+                snap: {
+                    snapTo: 1 / numberOfCards,
+                    duration: { min: 0.2, max: 0.5 },
+                    ease: 'power2.inOut'
+                },
+                onUpdate: (self) => {
+                    updateProgressDots(self.progress);
+                }
+            });
+
+            // ============================================
+            // PER-CARD ANIMATIONS (HORIZONTAL + ZIG-ZAG)
+            // ============================================
+
+            cards.forEach((card, index) => {
+                const isEven = index % 2 === 0;
+                const altSign = isEven ? 1 : -1; // Alternating: even = up first, odd = down first
+
+                // Horizontal movement timeline
+                const cardStart = `top+=${index * window.innerHeight} top`;
+                const cardEnd = `top+=${(index + 1) * window.innerHeight} top`;
+
+                // Initial position (cards start off-screen to the right)
+                gsap.set(card, {
+                    x: window.innerWidth,
+                    opacity: 0
+                });
+
+                // Create timeline for this card
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: pinContainer,
+                        start: cardStart,
+                        end: cardEnd,
+                        scrub: true,
+                        onUpdate: (self) => {
+                            // Calculate local progress (0 to 1 within this card's segment)
+                            const localProgress = self.progress;
+
+                            // Sinusoidal zig-zag: y(t) = altSign * Y * sin(π * t)
+                            const zigzagY = altSign * yAmplitude * Math.sin(Math.PI * localProgress);
+
+                            // Apply vertical offset
+                            gsap.set(card, { y: zigzagY });
+                        }
+                    }
+                });
+
+                // Horizontal + opacity animation
+                tl.fromTo(card,
+                    {
+                        x: window.innerWidth,
+                        opacity: 0
+                    },
+                    {
+                        x: -window.innerWidth * 0.1,
+                        opacity: 1,
+                        ease: 'none',
+                        duration: 1
+                    }
+                );
+            });
+
+            // ============================================
+            // PROGRESS DOTS UPDATE
+            // ============================================
+
+            const progressDots = gsap.utils.toArray('.progress-dot');
+
+            function updateProgressDots(progress) {
+                const activeIndex = Math.round(progress * (numberOfCards - 1));
+                progressDots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === activeIndex);
+                });
+            }
+
+        } else {
+            // Reduced motion: simple fade-in
+            const cards = gsap.utils.toArray('.hero-card');
+            cards.forEach((card, index) => {
+                gsap.fromTo(card,
+                    { opacity: 0, x: 50 },
+                    {
+                        opacity: 1,
+                        x: 0,
+                        duration: 0.3,
+                        scrollTrigger: {
+                            trigger: card,
+                            start: 'top 80%',
+                            end: 'top 50%',
+                            scrub: true
+                        }
+                    }
+                );
+            });
+        }
+
+        // ============================================
+        // KEYBOARD NAVIGATION
+        // ============================================
+
+        const cards = document.querySelectorAll('.hero-card');
+        let currentCardIndex = 0;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentCardIndex = Math.min(currentCardIndex + 1, cards.length - 1);
+                scrollToCard(currentCardIndex);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentCardIndex = Math.max(currentCardIndex - 1, 0);
+                scrollToCard(currentCardIndex);
+            }
+        });
+
+        function scrollToCard(index) {
+            const pinContainer = document.querySelector('.hero-pin-container');
+            const pinStart = pinContainer.offsetTop;
+            const cardScrollPosition = pinStart + (index * window.innerHeight);
+
+            window.scrollTo({
+                top: cardScrollPosition,
+                behavior: 'smooth'
+            });
+
+            // Focus the card for accessibility
+            setTimeout(() => {
+                cards[index].focus();
+            }, 500);
+        }
+
+        // Track focused card
+        cards.forEach((card, index) => {
+            card.addEventListener('focus', () => {
+                currentCardIndex = index;
+            });
+        });
+
+        // ============================================
+        // PARALLAX BACKGROUND IMAGES (SUBTLE)
+        // ============================================
+
+        const bgImages = document.querySelectorAll('.card-bg-image');
+
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            bgImages.forEach((img, index) => {
+                const card = img.closest('.hero-card');
+                const cardRect = card.getBoundingClientRect();
+
+                // Only apply parallax when card is in viewport
+                if (cardRect.top < window.innerHeight && cardRect.bottom > 0) {
+                    const parallaxAmount = (scrolled - card.offsetTop) * 0.05;
+                    img.style.transform = `translate(-50%, calc(-50% + ${parallaxAmount}px))`;
+                }
+            });
+        });
+
+    </script>
+</body>
+
+</html>

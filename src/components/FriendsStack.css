@@ -1,0 +1,77 @@
+.avatar-stack {
+    display: flex;
+    align-items: center;
+}
+
+.avatar {
+    width: 50px;
+    /* Adjusted slightly smaller to fit better inline, original req was 60px but might be too big for header */
+    height: 50px;
+    border-radius: 50%;
+    border: 3px solid rgb(255, 255, 255);
+    /* White border matches card bg better than black */
+    background: linear-gradient(135deg, #4f46e5, #9333ea);
+    position: relative;
+    margin-left: -15px;
+    transition: transform 0.3s, z-index 0.3s;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgb(255, 255, 255);
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.dark .avatar {
+    border-color: #1a1a1a;
+}
+
+.avatar:first-child {
+    margin-left: 0;
+}
+
+.avatar:hover {
+    transform: scale(1.15);
+    z-index: 10;
+}
+
+.avatar .tooltip {
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    background: #111;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 20;
+}
+
+.avatar:hover .tooltip {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+/* Avatar gradients */
+.avatar:nth-child(1) {
+    background: linear-gradient(135deg, #4f46e5, #9333ea);
+}
+
+.avatar:nth-child(2) {
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+}
+
+.avatar:nth-child(3) {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+}
+
+.avatar:nth-child(4) {
+    background: linear-gradient(135deg, #ec4899, #8b5cf6);
+}

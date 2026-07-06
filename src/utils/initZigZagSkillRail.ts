@@ -1,0 +1,164 @@
+import gsap from 'gsap';
+import ScrollTrigger from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
+interface ZigZagOptions {
+    containerSelector?: string;
+    railSelector?: string;
+    cardSelector?: string;
+    amplitude?: {
+        desktop: number;
+        tablet: number;
+        mobile: number;
+    };
+    snap?: boolean;
+    enableKeyboardNav?: boolean;
+}
+
+export function initZigZagSkillRail({
+    containerSelector = '#skills',
+    railSelector = '.skills-rail',
+    cardSelector = '.skill-card',
+    amplitude = { desktop: 60, tablet: 30, mobile: 14 },
+    snap = true
+}: ZigZagOptions = {}) {
+    const container = document.querySelector(containerSelector);
+    const rail = document.querySelector(railSelector);
+    const cards = gsap.utils.toArray(cardSelector) as HTMLElement[];
+
+    if (!container || !rail || cards.length === 0) {
+        console.warn('Zig-Zag elements not found:', { container, rail, cards });
+        return () => { }; // Return no-op cleanup
+    }
+
+    // Responsive Amplitude Logic
+    const getYAmplitude = () => {
+        const width = window.innerWidth;
+        if (width <= 768) return amplitude.mobile;
+        if (width <= 1024) return amplitude.tablet;
+        return amplitude.desktop;
+    };
+
+    let yAmplitude = getYAmplitude();
+    
+    // Cache card offsets (relative to rail start) + half width
+    let cardOffsets: number[] = [];
+    const cacheCardOffsets = () => {
+        cardOffsets = cards.map(card => card.offsetLeft + card.offsetWidth / 2);
+    };
+    cacheCardOffsets();
+
+    // Check reduced motion preference
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const prefersReducedMotion = mediaQuery.matches;
+
+    const handleResize = () => {
+        yAmplitude = getYAmplitude();
+        cacheCardOffsets();
+        ScrollTrigger.refresh();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // --- SCROLLTRIGGER SETUP ---
+    const numberOfCards = cards.length;
+    // Pin length: Allow enough vertical scroll to comfortably pan through all cards.
+    const totalPinnedHeight = window.innerHeight * numberOfCards;
+
+    const snapConfig = snap && !prefersReducedMotion ? {
+        snapTo: 1 / (numberOfCards - 1),
+        duration: { min: 0.2, max: 0.5 },
+        ease: 'power2.inOut'
+    } : undefined;
+
+    const st = ScrollTrigger.create({
+        trigger: container,
+        start: 'top top',
+        end: `+=${totalPinnedHeight}`,
+        pin: true,
+        scrub: 1,
+        anticipatePin: 1,
+        snap: snapConfig,
+        invalidateOnRefresh: true,
+    });
+
+    // --- ANIMATION TIMELINES ---
+    const firstCard = cards[0];
+    const lastCard = cards[cards.length - 1];
+
+    const getXStart = () => {
+        return window.innerWidth / 2 - (firstCard.offsetLeft + firstCard.offsetWidth / 2);
+    };
+
+    const getXEnd = () => {
+        return window.innerWidth / 2 - (lastCard.offsetLeft + lastCard.offsetWidth / 2);
+    };
+
+    // Set initial position of the rail so Python card starts in the middle
+    gsap.set(rail, { x: getXStart });
+
+    const tl = gsap.timeline({
+        scrollTrigger: {
+            trigger: container,
+            start: 'top top',
+            end: `+=${totalPinnedHeight}`,
+            scrub: 1,
+            invalidateOnRefresh: true,
+        }
+    });
+
+    // Horizontal Motion: Move rail from xStart (Python card centered) to xEnd (Docker card centered)
+    tl.fromTo(rail,
+        { x: () => getXStart() },
+        {
+            x: () => getXEnd(),
+            ease: 'none',
+        }
+    );
+
+    // Zig-Zag Motion
+    if (!prefersReducedMotion) {
+        // High-performance GSAP quickSetter for Y position to bypass parsing overhead
+        const ySetters = cards.map(card => gsap.quickSetter(card, "y", "px"));
+
+        // Single update loop for all cards
+        tl.eventCallback("onUpdate", () => {
+            const p = tl.progress();
+            const xStart = getXStart();
+            const xEnd = getXEnd();
+            const railX = xStart + (xEnd - xStart) * p;
+            const centerScreen = window.innerWidth / 2;
+
+            cards.forEach((card, index) => {
+                const isEven = index % 2 === 0;
+                const altSign = isEven ? 1 : -1;
+
+                const cardCenter = railX + cardOffsets[index];
+                const distFromCenterPixels = centerScreen - cardCenter;
+
+                // Normalize distance: -1 at left edge, +1 at right edge (roughly)
+                const normalizedDist = distFromCenterPixels / (window.innerWidth / 2);
+
+                // Only apply if close to center (within 2 screen widths effectively)
+                if (Math.abs(normalizedDist) < 2) {
+                    // Sine wave for zero offset at center (resting position)
+                    const dynamicY = altSign * yAmplitude * Math.sin(normalizedDist * Math.PI);
+                    ySetters[index](dynamicY);
+                } else {
+                    ySetters[index](0);
+                }
+            });
+        });
+    }
+
+    // Return Cleanup Function
+    return () => {
+        window.removeEventListener('resize', handleResize);
+        st.kill();
+        tl.kill();
+        // Reset transforms
+        gsap.set(rail, { clearProps: 'all' });
+        gsap.set(cards, { clearProps: 'all' });
+    };
+}

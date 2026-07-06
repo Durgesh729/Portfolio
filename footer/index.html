@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cinematic Horizontal Scroll</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.11/dist/dotlottie-wc.js" type="module"></script>
+  <style>
+    :root {
+      --bg-color: #0B0C10;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --accent: #66FCF1;
+      --text-main: #FFFFFF;
+      --text-muted: #C5C6C7;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Inter', system-ui, sans-serif;
+      overflow-x: hidden;
+      /* Prevent native horizontal scroll */
+      margin: 0;
+      overscroll-behavior: none;
+    }
+
+    /* Hide scrollbar for cleaner look */
+    ::-webkit-scrollbar {
+      width: 0px;
+      background: transparent;
+    }
+
+    .layout-spacer {
+      height: 500vh;
+      /* Determines the length of the scroll interaction */
+      position: relative;
+    }
+
+    .sticky-viewport {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      perspective: 1000px;
+      /* For 3D transforms */
+    }
+
+    .track {
+      display: flex;
+      gap: 6rem;
+      padding-left: 10vw;
+      /* Start with some offset */
+      padding-right: 10vw;
+      will-change: transform;
+      height: 60vh;
+      align-items: center;
+    }
+
+    .card {
+      position: relative;
+      width: 50vh;
+      height: 100%;
+      flex-shrink: 0;
+      border-radius: 20px;
+      background-color: #000;
+      /* overflow: visible; Let glow shine */
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      /* border: 1px solid var(--card-border); Removed to let neon border show */
+      transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+      transform-style: preserve-3d;
+      padding: 0;
+      /* padding handled by inner or we add it back? original had 3rem in inner. Requested has 12px. Let's keep 0 and let inner handle it or reset. */
+    }
+
+
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      border-radius: 25px;
+      /* slightly larger than card */
+      background: linear-gradient(-45deg, #e81cff 0%, #40c9ff 100%);
+      z-index: -10;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .card::after {
+      content: "";
+      z-index: -1;
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(-45deg, #fc00ff 0%, #00dbde 100%);
+      transform: translate3d(0, 0, 0) scale(0.95);
+      filter: blur(20px);
+    }
+
+    .card:hover::after {
+      filter: blur(30px);
+    }
+
+    .card:hover::before {
+      transform: rotate(-90deg) scaleX(1.34) scaleY(0.77);
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 3rem;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+      border-radius: 20px;
+      /* match card */
+    }
+
+
+
+    .card-number {
+      font-family: monospace;
+      color: var(--accent);
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      opacity: 0.8;
+      transform: translateZ(20px);
+      /* 3D pop */
+    }
+
+    .card h2 {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+      transform: translateZ(30px);
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 80%;
+      transform: translateZ(20px);
+      line-height: 1.6;
+    }
+
+
+
+    /* ... existing styles ... */
+
+    /* Custom Progress Bar Styles */
+    .range {
+      position: relative;
+      background: linear-gradient(45deg, #1f1f1f, #4b004b);
+      border: 2px solid #660066;
+      width: 320px;
+      height: 35px;
+      transform: skew(30deg) translateZ(10px);
+      font-family: "Orbitron", monospace;
+      box-shadow:
+        0 0 20px rgba(179, 0, 255, 0.3),
+        0 0 50px rgba(179, 0, 255, 0.2);
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+
+    .range:before {
+      --width: calc(var(--p) * 1%);
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #d400ff, #8000ff);
+      z-index: 0;
+      animation: load 0.7s forwards ease-in-out;
+      box-shadow:
+        0 0 15px #d400ff,
+        0 0 25px #8000ff;
+    }
+
+    .range:after {
+      counter-reset: progress var(--p);
+      content: counter(progress) "%";
+      color: #fff;
+      position: absolute;
+      left: 8%;
+      top: 50%;
+      transform: translateY(-50%) skewX(-30deg);
+      z-index: 1;
+      text-shadow:
+        0 0 5px #fff,
+        0 0 10px #d400ff;
+    }
+
+    .range__label {
+      position: absolute;
+      top: -50%;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: #e0e0e0;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transform: skew(-30deg);
+      text-shadow:
+        0 0 10px #8000ff,
+        0 0 20px #8000ff;
+    }
+
+    @keyframes load {
+      to {
+        width: var(--width);
+      }
+    }
+
+    @keyframes glitch {
+
+      0%,
+      5% {
+        transform: translate(0, 0);
+      }
+
+      1% {
+        transform: translate(-5%, -10%);
+      }
+
+      2% {
+        transform: translate(10%, 30%);
+      }
+
+      3% {
+        transform: translate(-43%, 10%);
+      }
+
+      4% {
+        transform: translate(2%, -23%);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="layout-spacer" id="scroller">
+    <div class="sticky-viewport">
+      <div class="track" id="track">
+
+        <!-- Card 1 -->
+        <div class="card">
+          <dotlottie-wc src="https://lottie.host/d78ac567-5ada-4790-bc95-06450452e96f/8SHYxTaIv9.lottie"
+            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; opacity: 0.3; z-index: 0;"
+            autoplay loop></dotlottie-wc>
+          <div class="card-inner">
+            <div class="card-number">Programming</div>
+            <h2>Python</h2>
+            <h5> ℙ𝕣𝕠𝕘𝕣𝕖𝕤𝕤</h5>
+            <div class="range" style="--p:90">
+              <div class="range__label">Proficiency</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card">
+          <img src="images/numpy_logo.png"
+            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; opacity: 0.3; z-index: 0; object-fit: contain;"
+            alt="NumPy Logo">
+          <div class="card-inner">
+            <div class="card-number">AI / ML Technologies</div>
+            <h2>NumPy</h2>
+            <h5> ℙ𝕣𝕠𝕘𝕣𝕖𝕤𝕤</h5>
+            <div class="range" style="--p:85">
+              <div class="range__label">Proficiency</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card">
+          <img src="images/pandas_logo.png"
+            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 280px; height: 280px; opacity: 0.3; z-index: 0; object-fit: contain;"
+            alt="Pandas Logo">
+          <div class="card-inner">
+            <div class="card-number">AI / ML Technologies</div>
+            <h2>Pandas</h2>
+            <h5> ℙ𝕣𝕠𝕘𝕣𝕖𝕤𝕤</h5>
+            <div class="range" style="--p:88">
+              <div class="range__label">Proficiency</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIAL NEON CARD (Now Standard) -->
+        <div class="card">
+          <img src="images/streamlit_logo.png"
+            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; opacity: 0.3; z-index: 0; object-fit: contain;"
+            alt="Streamlit Logo">
+          <div class="card-inner">
+            <div class="card-number">AI / ML Technologies</div>
+            <h2>Streamlit</h2>
+            <h5> ℙ𝕣𝕠𝕘𝕣𝕖𝕤𝕤</h5>
+            <div class="range" style="--p:80">
+              <div class="range__label">Proficiency</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="card">
+          <img src="images/github_logo.png"
+            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; opacity: 0.3; z-index: 0; object-fit: contain;"
+            alt="GitHub Logo">
+          <div class="card-inner">
+            <div class="card-number">Tools & Others</div>
+            <h2>Git / GitHub</h2>
+            <h5> ℙ𝕣𝕠𝕘𝕣𝕖𝕤𝕤</h5>
+            <div class="range" style="--p:85">
+              <div class="range__label">Proficiency</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="card">
+          <img src="images/mongodb_logo.png"
+            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180px; height: 180px; opacity: 0.3; z-index: 0; object-fit: contain;"
+            alt="MongoDB Logo">
+          <div class="card-inner">
+            <div class="card-number">Tools & Others</div>
+            <h2>MongoDB</h2>
+            <h5> ℙ𝕣𝕠𝕘𝕣𝕖𝕤𝕤</h5>
+            <div class="range" style="--p:90">
+              <div class="range__label">Proficiency</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="card">
+          <img src="images/docker_logo.png"
+            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 280px; height: 280px; opacity: 0.3; z-index: 0; object-fit: contain;"
+            alt="Docker Logo">
+          <div class="card-inner">
+            <div class="card-number">Tools & Others</div>
+            <h2>Docker</h2>
+            <h5> ℙ𝕣𝕠𝕘𝕣𝕖𝕤𝕤</h5>
+            <div class="range" style="--p:60">
+              <div class="range__label">Proficiency</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+
+  <script>
+    const scroller = document.getElementById('scroller');
+    const track = document.getElementById('track');
+
+    // Smooth scrolling variables
+    let currentScroll = 0;
+    let targetScroll = 0;
+    const ease = 0.08; // Lower = smoother/slower catchup
+
+    // Zig-zag amplitude (vertical movement)
+    const getYAmplitude = () => {
+      const width = window.innerWidth;
+      if (width <= 768) return 30;
+      if (width <= 1024) return 50;
+      return 80; // Desktop
+    };
+
+    let yAmplitude = getYAmplitude();
+
+    // Update on resize
+    window.addEventListener('resize', () => {
+      yAmplitude = getYAmplitude();
+    });
+
+    function lerp(start, end, factor) {
+      return start + (end - start) * factor;
+    }
+
+    function update() {
+      // Get standard vertical scroll position
+      targetScroll = window.scrollY;
+
+      // Smoothly interpolate current scroll towards target
+      currentScroll = lerp(currentScroll, targetScroll, ease);
+
+      // Calculate layout metrics
+      const stickyHeight = window.innerHeight;
+      const totalScrollHeight = scroller.offsetHeight - stickyHeight;
+      const trackWidth = track.scrollWidth;
+      const viewportWidth = window.innerWidth;
+
+      // Percentage of the scrollable area (0 to 1)
+      let scrollFraction = currentScroll / totalScrollHeight;
+      scrollFraction = Math.max(0, Math.min(1, scrollFraction));
+
+      // Calculate horizontal translation
+      const maxTranslate = trackWidth - viewportWidth + (viewportWidth * 0.2);
+      const translateX = -1 * scrollFraction * maxTranslate;
+
+      // Apply transform to the track (no zig-zag here, only horizontal)
+      track.style.transform = `translateX(${translateX}px)`;
+
+      // Card Transformations with ZIG-ZAG pattern
+      const cards = document.querySelectorAll('.card');
+      const centerScreen = viewportWidth / 2;
+      const numberOfCards = cards.length;
+
+      cards.forEach((card, index) => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const distFromCenter = centerScreen - cardCenter;
+
+        // Calculate card's individual progress (0 to 1 for each card)
+        const cardProgress = Math.max(0, Math.min(1,
+          (scrollFraction * numberOfCards) - index
+        ));
+
+        // Alternating zig-zag: even cards go up first, odd cards go down first
+        const isEven = index % 2 === 0;
+        const altSign = isEven ? 1 : -1;
+
+        // Sinusoidal zig-zag: y(t) = altSign * Y * sin(π * t)
+        const zigzagY = altSign * yAmplitude * Math.sin(Math.PI * cardProgress);
+
+        // Calculate effect strength for rotation
+        const effectStrength = distFromCenter / (viewportWidth / 2);
+        const rotateY = effectStrength * 10;
+
+        // Apply combined transform: horizontal position, zig-zag vertical, rotation, and scale
+        card.style.transform = `
+          perspective(1000px) 
+          translateY(${zigzagY}px) 
+          rotateY(${rotateY}deg) 
+          scale(${1 - Math.abs(effectStrength) * 0.05})
+        `;
+      });
+
+      requestAnimationFrame(update);
+    }
+
+    // Initialize recursive loop
+    update();
+
+    // Optional: Reset scroll on reload to start fresh
+    window.onbeforeunload = function () {
+      window.scrollTo(0, 0);
+    }
+  </script>
+</body>
+
+</html>

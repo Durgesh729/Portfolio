@@ -60,8 +60,8 @@
 /* Individual skill cards - Layout Only */
 .skill-card {
     position: relative;
-    width: 190px;
-    height: 254px;
+    width: 290px;
+    height: 454px;
     flex-shrink: 0;
     /* Removed visual styles from here to avoid conflict with GSAP transform */
     will-change: transform;
@@ -191,7 +191,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    padding: clamp(2rem, 4vw, 3rem);
+    padding: 1.5rem;
     background: linear-gradient(to top,
             rgba(0, 0, 0, 0.8) 0%,
             transparent 60%);
@@ -199,7 +199,7 @@
 
 .card-category {
     font-family: 'Courier New', monospace;
-    font-size: clamp(0.8rem, 1.5vw, 1rem);
+    font-size: 0.85rem;
     color: #00d9ff;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -208,21 +208,18 @@
 }
 
 .card-title {
-    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-size: 2rem;
     font-weight: 800;
-    line-height: 1.1;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, #ffffff, #a0a0a0);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+    color: #464bc4;
 }
 
 .card-description {
-    font-size: clamp(1rem, 1.8vw, 1.2rem);
+    font-size: 0.95rem;
     color: #a0a0a0;
-    line-height: 1.6;
-    max-width: 90%;
+    line-height: 1.5;
+    max-width: 100%;
 }
 
 /* Cyberpunk progress bar */
@@ -232,8 +229,8 @@
     border: 2px solid #660066;
     width: 100%;
     max-width: 320px;
-    height: 38px;
-    transform: skew(30deg);
+    height: 34px;
+    transform: skew(20deg);
     box-shadow:
         0 0 20px rgba(179, 0, 255, 0.4),
         0 0 50px rgba(179, 0, 255, 0.2),
@@ -261,11 +258,11 @@
     position: absolute;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%) skewX(-30deg);
+    transform: translate(-50%, -50%) skewX(-20deg);
     z-index: 1;
     color: #fff;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.9rem;
     text-shadow:
         0 0 5px #fff,
         0 0 10px #d400ff,
@@ -275,11 +272,11 @@
 
 .progress-label {
     position: absolute;
-    top: -35px;
+    top: -32px;
     left: 50%;
-    transform: translateX(-50%) skew(-30deg);
+    transform: translateX(-50%) skew(-20deg);
     color: #e0e0e0;
-    font-size: 11px;
+    font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 2px;
     font-weight: 600;
@@ -300,8 +297,8 @@
 
 /* Progress label text */
 .progress-label-text {
-    font-size: 1.1rem;
-    margin-bottom: 0.8rem;
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
     color: #c5c6c7;
     letter-spacing: 3px;
 }
