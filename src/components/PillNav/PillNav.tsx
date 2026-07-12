@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import './PillNav.css';
@@ -141,7 +141,16 @@ const PillNav = ({
             }
         }
 
-        return () => window.removeEventListener('resize', onResize);
+        const currentTimelines = tlRefs.current;
+        const currentTweens = activeTweenRefs.current;
+        const currentLogoTween = logoTweenRef.current;
+
+        return () => {
+            window.removeEventListener('resize', onResize);
+            currentTimelines.forEach(tl => tl?.kill());
+            currentTweens.forEach(t => t?.kill());
+            currentLogoTween?.kill();
+        };
     }, [items, ease, initialLoadAnimation]);
 
     useEffect(() => {
@@ -250,12 +259,12 @@ const PillNav = ({
 
     const isRouterLink = (href: string) => href && !isExternalLink(href);
 
-    const cssVars = {
-        ['--base' as any]: baseColor,
-        ['--pill-bg' as any]: pillColor,
-        ['--hover-text' as any]: hoveredPillTextColor,
-        ['--pill-text' as any]: resolvedPillTextColor
-    } as React.CSSProperties;
+    const cssVars: React.CSSProperties & Record<string, string> = {
+        '--base': baseColor,
+        '--pill-bg': pillColor,
+        '--hover-text': hoveredPillTextColor,
+        '--pill-text': resolvedPillTextColor
+    };
 
     return (
         <div className={`pill-nav-container ${className}`}>

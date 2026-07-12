@@ -16,6 +16,8 @@ const HeroSection = () => {
   const sectionRef      = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(true);
   const isVisibleRef    = useRef(true);
+  const rafIdRef        = useRef<number | null>(null);
+  const lastDrawnFrameRef = useRef<number>(-1);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Respect prefers-reduced-motion
@@ -33,7 +35,11 @@ const HeroSection = () => {
     if (!ctx) return;
 
     const index = Math.max(0, Math.min(rawIndex, maxLoadedRef.current));
-    const img   = imagesRef.current[index];
+    
+    // Draw only if frame index changed
+    if (index === lastDrawnFrameRef.current) return;
+
+    const img = imagesRef.current[index];
     if (!img) return;
 
     const dpr  = window.devicePixelRatio || 1;
@@ -61,6 +67,39 @@ const HeroSection = () => {
 
     ctx.clearRect(0, 0, W, H);
     ctx.drawImage(img, dx, dy, dw, dh);
+    lastDrawnFrameRef.current = index;
+  };
+
+  // ─── Loop Control Functions ──────────────────────────────────────────────────
+  const stopLoop = () => {
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+  };
+
+  const loop = () => {
+    if (!isVisibleRef.current) {
+      stopLoop();
+      return;
+    }
+
+    const diff = targetFrameRef.current - currentFrameRef.current;
+    if (Math.abs(diff) > 0.05) {
+      currentFrameRef.current += diff * 0.15;
+      drawFrame(Math.round(currentFrameRef.current));
+      rafIdRef.current = requestAnimationFrame(loop);
+    } else {
+      currentFrameRef.current = targetFrameRef.current;
+      drawFrame(targetFrameRef.current);
+      stopLoop(); // Stop requestAnimationFrame when animation settles
+    }
+  };
+
+  const startLoop = () => {
+    if (rafIdRef.current === null && isVisibleRef.current) {
+      rafIdRef.current = requestAnimationFrame(loop);
+    }
   };
 
   // ─── Scroll-Bound Canvas Frame Mapping ─────────────────────────────────────────
@@ -71,7 +110,12 @@ const HeroSection = () => {
       const scrollY = window.scrollY;
       const scrollRange = 1000; // Matches parent height scroll padding
       const progress = Math.min(1, Math.max(0, scrollY / scrollRange));
-      targetFrameRef.current = Math.round(progress * (TOTAL_FRAMES - 1));
+      const nextTarget = Math.round(progress * (TOTAL_FRAMES - 1));
+
+      if (nextTarget !== targetFrameRef.current) {
+        targetFrameRef.current = nextTarget;
+        startLoop();
+      }
 
       // Gradual opacity fade-out as the About section rises (past Y=1000px)
       if (sectionRef.current) {
@@ -91,9 +135,10 @@ const HeroSection = () => {
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      stopLoop();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [reducedMotion]);
 
   // ─── Frame Loader ─────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -102,13 +147,22 @@ const HeroSection = () => {
         const img = new Image();
         const num = (FRAME_START + index).toString().padStart(3, "0");
         img.src   = `/herosectionframes/${num}.webp`;
-        img.onload = () => {
-          imagesRef.current[index] = img;
-          if (index > maxLoadedRef.current) maxLoadedRef.current = index;
-          if (index === 0) drawFrame(0);
-          resolve();
-        };
-        img.onerror = () => resolve();
+        
+        // Decode off-main-thread to avoid UI micro-stutters during loading
+        img.decode()
+          .then(() => {
+            imagesRef.current[index] = img;
+            if (index > maxLoadedRef.current) maxLoadedRef.current = index;
+            if (index === 0) drawFrame(0);
+            resolve();
+          })
+          .catch(() => {
+            // Fallback for older browsers or loading/decoding failure
+            imagesRef.current[index] = img;
+            if (index > maxLoadedRef.current) maxLoadedRef.current = index;
+            if (index === 0) drawFrame(0);
+            resolve();
+          });
       });
 
     const loadAll = async () => {
@@ -128,56 +182,49 @@ const HeroSection = () => {
     };
 
     loadAll();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ─── Visibility Tracking for Performance Optimization ──────────────────────────
+  // ─── Visibility Tracking with IntersectionObserver ────────────────────────────
   useEffect(() => {
     if (reducedMotion) return;
 
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const threshold = 1000 + window.innerHeight; // Keep canvas visible throughout transition
-      const visible = scrollY < threshold;
-      if (visible !== isVisibleRef.current) {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const visible = entry.isIntersecting;
         isVisibleRef.current = visible;
         setIsVisible(visible);
-      }
-    };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [reducedMotion]);
-
-  // ─── RAF Loop (smooth interpolation) ─────────────────────────────────────────
-  useEffect(() => {
-    let rafId: number;
-    const loop = () => {
-      if (isVisibleRef.current) {
-        const diff = targetFrameRef.current - currentFrameRef.current;
-        if (Math.abs(diff) > 0.05) {
-          currentFrameRef.current += diff * 0.15;
-          drawFrame(Math.round(currentFrameRef.current));
+        if (visible) {
+          // Restart animation loop if target frame has not been reached yet
+          if (Math.abs(targetFrameRef.current - currentFrameRef.current) > 0.05) {
+            startLoop();
+          }
         } else {
-          currentFrameRef.current = targetFrameRef.current;
-          drawFrame(targetFrameRef.current);
+          stopLoop();
         }
-      }
-      rafId = requestAnimationFrame(loop);
+      },
+      { threshold: 0 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+      stopLoop();
     };
-    rafId = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(rafId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [reducedMotion]);
 
   // ─── Resize ───────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const onResize = () => drawFrame(Math.round(currentFrameRef.current));
+    const onResize = () => {
+      lastDrawnFrameRef.current = -1; // Reset to force redraw at new size
+      drawFrame(Math.round(currentFrameRef.current));
+    };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ─── JSX ─────────────────────────────────────────────────────────────────────

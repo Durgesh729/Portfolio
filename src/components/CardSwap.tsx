@@ -8,10 +8,12 @@ import React, {
     RefObject,
     useEffect,
     useMemo,
-    useRef
+    useRef,
+    useState
 } from 'react';
 import gsap from 'gsap';
 import './CardSwap.css';
+import { useIdle } from '@/hooks/useIdle';
 
 export interface CardSwapProps {
     width?: number | string;
@@ -102,8 +104,32 @@ const CardSwap: React.FC<CardSwapProps> = ({
     const tlRef = useRef<gsap.core.Timeline | null>(null);
     const intervalRef = useRef<number>(0);
     const container = useRef<HTMLDivElement>(null);
+    const [isIntersecting, setIsIntersecting] = useState(false);
+    const { isIdle } = useIdle();
 
     useEffect(() => {
+        const node = container.current;
+        if (!node) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsIntersecting(entry.isIntersecting);
+            },
+            { threshold: 0 }
+        );
+        observer.observe(node);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!isIntersecting || isIdle) {
+            tlRef.current?.kill();
+            return;
+        }
+
         const total = refs.length;
         refs.forEach((r, i) => placeNow(r.current!, makeSlot(i, cardDistance, verticalDistance, total), skewAmount));
 
@@ -184,10 +210,14 @@ const CardSwap: React.FC<CardSwapProps> = ({
                 node.removeEventListener('mouseenter', pause);
                 node.removeEventListener('mouseleave', resume);
                 clearInterval(intervalRef.current);
+                tlRef.current?.kill();
             };
         }
-        return () => clearInterval(intervalRef.current);
-    }, [cardDistance, verticalDistance, delay, pauseOnHover, skewAmount, easing]);
+        return () => {
+            clearInterval(intervalRef.current);
+            tlRef.current?.kill();
+        };
+    }, [cardDistance, verticalDistance, delay, pauseOnHover, skewAmount, easing, isIntersecting, isIdle]);
 
     const rendered = childArr.map((child, i) =>
         isValidElement<CardProps>(child)

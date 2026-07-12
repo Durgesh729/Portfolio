@@ -2,7 +2,7 @@ import React, { Suspense, useState, useEffect, useRef } from "react";
 import "./LazySection.css";
 
 interface LazySectionProps {
-  importFunc: () => Promise<{ default: React.ComponentType<any> }>;
+  importFunc: () => Promise<{ default: React.ComponentType<Record<string, never>> }>;
   fallback?: React.ReactNode;
   minHeight?: string;
   id?: string;

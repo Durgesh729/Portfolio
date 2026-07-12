@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, MotionProps } from 'motion/react';
 
 interface DecryptedTextProps extends Omit<MotionProps, 'children'> {
@@ -23,7 +23,7 @@ const styles = {
         whiteSpace: 'pre-wrap'
     },
     srOnly: {
-        position: 'absolute' as 'absolute',
+        position: 'absolute' as const,
         width: '1px',
         height: '1px',
         padding: 0,
@@ -209,7 +209,7 @@ export default function DecryptedText({
             ref={containerRef}
             style={styles.wrapper}
             {...hoverProps}
-            {...props as any}
+            {...(props as React.ComponentPropsWithoutRef<typeof motion.span>)}
         >
             <span style={styles.srOnly}>{displayText}</span>
 

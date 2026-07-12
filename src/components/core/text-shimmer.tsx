@@ -18,7 +18,7 @@ export function TextShimmer({
     spread = 2,
     ...props
 }: TextShimmerProps) {
-    const MotionComponent = useMemo(() => motion(Component as React.ComponentType<any>), [Component]);
+    const MotionComponent = useMemo(() => motion(Component as React.ComponentType<Record<string, unknown>>), [Component]);
 
     return (
         <MotionComponent

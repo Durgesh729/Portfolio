@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useCallback, ReactNode } from 'react';
+import { useLayoutEffect, useRef, useCallback, ReactNode, useEffect } from 'react';
 import Lenis from 'lenis';
 import './ScrollStack.css';
 
@@ -51,6 +51,7 @@ const ScrollStack = ({
     const initialEndTopRef = useRef<number>(0);
     const lastTransformsRef = useRef(new Map());
     const isUpdatingRef = useRef(false);
+    const isIntersectingRef = useRef(false);
 
     const calculateProgress = useCallback((scrollTop: number, start: number, end: number) => {
         if (scrollTop < start) return 0;
@@ -228,6 +229,7 @@ const ScrollStack = ({
     ]);
 
     const handleScroll = useCallback(() => {
+        if (!isIntersectingRef.current) return;
         updateCardTransforms();
     }, [updateCardTransforms]);
 
@@ -260,7 +262,9 @@ const ScrollStack = ({
             lenis.on('scroll', handleScroll);
 
             const raf = (time: number) => {
-                lenis.raf(time);
+                if (isIntersectingRef.current) {
+                    lenis.raf(time);
+                }
                 animationFrameRef.current = requestAnimationFrame(raf);
             };
             animationFrameRef.current = requestAnimationFrame(raf);
@@ -347,6 +351,26 @@ const ScrollStack = ({
         updateCardTransforms,
         measureInitialTops
     ]);
+
+    useEffect(() => {
+        const scroller = scrollerRef.current;
+        if (!scroller) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                isIntersectingRef.current = entry.isIntersecting;
+                if (entry.isIntersecting) {
+                    updateCardTransforms();
+                }
+            },
+            { threshold: 0 }
+        );
+        observer.observe(scroller);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, [updateCardTransforms]);
 
     return (
         <div className={`scroll-stack-scroller ${className}`.trim()} ref={scrollerRef}>

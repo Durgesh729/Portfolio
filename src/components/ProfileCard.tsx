@@ -34,10 +34,37 @@ export default function ProfileCard({
     useEffect(() => {
         const card = cardRef.current;
         if (!card || !enableTilt) return;
-        // ... previous tilt logic ...
+
         let targetTilt = { x: 0, y: 0 };
         let currentTilt = { x: 0, y: 0 };
         let rect: DOMRect | null = null;
+        let animating = false;
+
+        const animate = () => {
+            const dx = targetTilt.x - currentTilt.x;
+            const dy = targetTilt.y - currentTilt.y;
+
+            if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
+                currentTilt = {
+                    x: currentTilt.x + dx * 0.1,
+                    y: currentTilt.y + dy * 0.1
+                };
+                setTilt({ x: currentTilt.x, y: currentTilt.y });
+                animationRef.current = requestAnimationFrame(animate);
+            } else {
+                currentTilt = { x: targetTilt.x, y: targetTilt.y };
+                setTilt({ x: currentTilt.x, y: currentTilt.y });
+                animating = false;
+                animationRef.current = undefined;
+            }
+        };
+
+        const startAnimating = () => {
+            if (!animating) {
+                animating = true;
+                animationRef.current = requestAnimationFrame(animate);
+            }
+        };
 
         const handlePointerMove = (e: PointerEvent) => {
             if (!rect) {
@@ -53,6 +80,7 @@ export default function ProfileCard({
             const rotateY = ((x - centerX) / centerX) * 15;
 
             targetTilt = { x: rotateX, y: rotateY };
+            startAnimating();
 
             if (glowRef.current) {
                 const glowX = (x / rect.width) * 100;
@@ -75,26 +103,18 @@ export default function ProfileCard({
             if (glareRef.current) {
                 glareRef.current.style.opacity = '0';
             }
+            startAnimating();
         };
 
         const handlePointerEnter = () => {
             rect = card.getBoundingClientRect();
             setIsHovering(true);
-        };
-
-        const animate = () => {
-            currentTilt.x += (targetTilt.x - currentTilt.x) * 0.1;
-            currentTilt.y += (targetTilt.y - currentTilt.y) * 0.1;
-
-            setTilt({ x: currentTilt.x, y: currentTilt.y });
-            animationRef.current = requestAnimationFrame(animate);
+            startAnimating();
         };
 
         card.addEventListener('pointermove', handlePointerMove);
         card.addEventListener('pointerleave', handlePointerLeave);
         card.addEventListener('pointerenter', handlePointerEnter);
-
-        animate();
 
         return () => {
             card.removeEventListener('pointermove', handlePointerMove);

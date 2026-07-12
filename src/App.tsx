@@ -8,16 +8,18 @@ import NotFound from "./pages/NotFound";
 
 import GlobalErrorBoundary from "@/components/GlobalErrorBoundary";
 import SmoothScroll from "@/components/SmoothScroll";
+import { IdleProvider } from "@/hooks/useIdle";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <GlobalErrorBoundary>
-        <SmoothScroll>
+    <IdleProvider timeout={5000}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <GlobalErrorBoundary>
+          <SmoothScroll>
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Routes>
               <Route path="/" element={<Index />} />
@@ -27,7 +29,8 @@ const App = () => (
           </BrowserRouter>
         </SmoothScroll>
       </GlobalErrorBoundary>
-    </TooltipProvider>
+      </TooltipProvider>
+    </IdleProvider>
   </QueryClientProvider>
 );
 

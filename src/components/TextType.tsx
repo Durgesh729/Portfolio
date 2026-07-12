@@ -1,8 +1,8 @@
 "use client";
-
 import { useEffect, useRef, useState, useMemo, createElement } from 'react';
 import { gsap } from 'gsap';
 import './TextType.css';
+import { useIdle } from '@/hooks/useIdle';
 
 interface TextTypeProps {
     text: string | string[];
@@ -43,11 +43,17 @@ const TextType: React.FC<TextTypeProps> = ({
     const [currentCharIndex, setCurrentCharIndex] = useState(0);
     const [isVisible, setIsVisible] = useState(!startOnVisible);
 
+    const { isIdle } = useIdle();
+
     const isWaiting = useRef(false);
     const cursorRef = useRef<HTMLElement>(null);
     const containerRef = useRef<HTMLElement>(null);
 
     const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [text]);
+
+    const isTypingFinished = currentTextIndex >= textArray.length || 
+        (currentTextIndex === textArray.length - 1 && currentCharIndex >= textArray[currentTextIndex].length);
+    const shouldPauseCursor = isIdle && isTypingFinished;
 
     // Intersection Observer
     useEffect(() => {
@@ -70,7 +76,7 @@ const TextType: React.FC<TextTypeProps> = ({
 
     // Cursor Animation
     useEffect(() => {
-        if (showCursor && cursorRef.current) {
+        if (showCursor && cursorRef.current && isVisible && !shouldPauseCursor) {
             gsap.set(cursorRef.current, { opacity: 1 });
             const anim = gsap.to(cursorRef.current, {
                 opacity: 0,
@@ -82,8 +88,10 @@ const TextType: React.FC<TextTypeProps> = ({
             return () => {
                 anim.kill();
             };
+        } else if (shouldPauseCursor && cursorRef.current) {
+            gsap.set(cursorRef.current, { opacity: 1 });
         }
-    }, [showCursor, cursorBlinkDuration]);
+    }, [showCursor, cursorBlinkDuration, isVisible, shouldPauseCursor]);
 
     // Main Typing Logic
     useEffect(() => {
