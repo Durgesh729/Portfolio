@@ -32,12 +32,14 @@
     box-sizing: border-box;
     content: attr(data-text);
     color: var(--animation-color);
-    width: 0%;
+    width: 100%;
+    clip-path: inset(0 100% 0 0);
     inset: 0;
     border-right: var(--border-right) solid var(--animation-color);
     overflow: hidden;
     -webkit-text-stroke: 1px var(--animation-color);
     white-space: nowrap;
+    will-change: clip-path;
 }
 
 /* 
@@ -48,21 +50,21 @@
 /* Item 1: Deep Learning */
 @keyframes seq-1 {
     0% {
-        width: 0%;
+        clip-path: inset(0 100% 0 0);
     }
 
     16.666% {
-        width: 100%;
+        clip-path: inset(0 0% 0 0);
         filter: drop-shadow(0 0 23px var(--animation-color));
     }
 
     83.333% {
-        width: 100%;
+        clip-path: inset(0 0% 0 0);
         filter: drop-shadow(0 0 23px var(--animation-color));
     }
 
     100% {
-        width: 0%;
+        clip-path: inset(0 100% 0 0);
         filter: none;
     }
 }
@@ -72,26 +74,26 @@
 
     0%,
     16.666% {
-        width: 0%;
+        clip-path: inset(0 100% 0 0);
     }
 
     33.333% {
-        width: 100%;
+        clip-path: inset(0 0% 0 0);
         filter: drop-shadow(0 0 23px var(--animation-color));
     }
 
     66.666% {
-        width: 100%;
+        clip-path: inset(0 0% 0 0);
         filter: drop-shadow(0 0 23px var(--animation-color));
     }
 
     83.333% {
-        width: 0%;
+        clip-path: inset(0 100% 0 0);
         filter: none;
     }
 
     100% {
-        width: 0%;
+        clip-path: inset(0 100% 0 0);
     }
 }
 
@@ -100,21 +102,21 @@
 
     0%,
     33.333% {
-        width: 0%;
+        clip-path: inset(0 100% 0 0);
     }
 
     50% {
-        width: 100%;
+        clip-path: inset(0 0% 0 0);
         filter: drop-shadow(0 0 23px var(--animation-color));
     }
 
     66.666% {
-        width: 0%;
+        clip-path: inset(0 100% 0 0);
         filter: none;
     }
 
     100% {
-        width: 0%;
+        clip-path: inset(0 100% 0 0);
     }
 }
 

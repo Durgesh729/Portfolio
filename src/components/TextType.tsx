@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useMemo, createElement } from 'react';
+import { useEffect, useRef, useMemo, createElement } from 'react';
 import { gsap } from 'gsap';
 import './TextType.css';
 import { useIdle } from '@/hooks/useIdle';
@@ -10,8 +10,8 @@ interface TextTypeProps {
     typingSpeed?: number;
     initialDelay?: number;
     pauseDuration?: number;
-    deletingSpeed?: number; // Kept for interface compatibility but force ignored in logic
-    loop?: boolean; // Kept for interface compatibility but force ignored in logic
+    deletingSpeed?: number;
+    loop?: boolean;
     className?: string;
     showCursor?: boolean;
     hideCursorWhileTyping?: boolean;
@@ -20,7 +20,7 @@ interface TextTypeProps {
     cursorBlinkDuration?: number;
     startOnVisible?: boolean;
     onSentenceComplete?: (sentence: string, index: number) => void;
-    textColors?: string[]; // Kept for compatibility
+    textColors?: string[];
 }
 
 const TextType: React.FC<TextTypeProps> = ({
@@ -38,32 +38,186 @@ const TextType: React.FC<TextTypeProps> = ({
     startOnVisible = false,
     onSentenceComplete,
 }) => {
-    const [displayedText, setDisplayedText] = useState('');
-    const [currentTextIndex, setCurrentTextIndex] = useState(0);
-    const [currentCharIndex, setCurrentCharIndex] = useState(0);
-    const [isVisible, setIsVisible] = useState(!startOnVisible);
-
     const { isIdle } = useIdle();
 
-    const isWaiting = useRef(false);
-    const cursorRef = useRef<HTMLElement>(null);
-    const containerRef = useRef<HTMLElement>(null);
+    // ─── Refs ────────────────────────────────────────────────────────────────────
+    // All animation-driving state lives in refs to avoid React re-renders on every
+    // typed character. The only DOM update is a direct write to textNodeRef.
+    const containerRef   = useRef<HTMLElement>(null);
+    const contentRef     = useRef<HTMLSpanElement>(null);   // ← direct DOM write target
+    const cursorRef      = useRef<HTMLElement>(null);
+    const timeoutRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Animation state — refs only, never React state
+    const textArrayRef         = useRef<string[]>([]);
+    const currentTextIndexRef  = useRef(0);
+    const currentCharIndexRef  = useRef(0);
+    const displayedTextRef     = useRef('');
+    const isVisibleRef         = useRef(!startOnVisible);
+    const isWaitingRef         = useRef(false);
+    const isIdleRef            = useRef(false);
+    const isUnmountedRef       = useRef(false);
+    const cursorAnimRef        = useRef<gsap.core.Tween | null>(null);
 
     const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [text]);
 
-    const isTypingFinished = currentTextIndex >= textArray.length || 
-        (currentTextIndex === textArray.length - 1 && currentCharIndex >= textArray[currentTextIndex].length);
-    const shouldPauseCursor = isIdle && isTypingFinished;
+    // Keep the ref in sync — no re-render needed when text prop changes
+    textArrayRef.current = textArray;
 
-    // Intersection Observer
+    // ─── Keep isIdle ref in sync ──────────────────────────────────────────────────
+    // useIdle only fires when idle state changes, so this is cheap.
+    isIdleRef.current = isIdle;
+
+    // ─── Core typing engine (runs entirely via setTimeout, zero React state) ──────
+    const scheduleNext = () => {
+        if (isUnmountedRef.current) return;
+        if (timeoutRef.current !== null) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+
+        const tick = () => {
+            if (isUnmountedRef.current) return;
+            if (isWaitingRef.current) return;
+            if (!isVisibleRef.current) return;
+
+            const arr = textArrayRef.current;
+            const tIdx = currentTextIndexRef.current;
+
+            if (tIdx >= arr.length) return; // all done
+
+            const currentString = arr[tIdx];
+            const cIdx = currentCharIndexRef.current;
+
+            if (cIdx >= currentString.length) {
+                // Finished typing this string
+                if (tIdx < arr.length - 1) {
+                    // Pause then move to the next string
+                    isWaitingRef.current = true;
+                    timeoutRef.current = setTimeout(() => {
+                        if (isUnmountedRef.current) return;
+                        displayedTextRef.current += '\n\n';
+                        if (contentRef.current) {
+                            contentRef.current.textContent = displayedTextRef.current;
+                        }
+                        currentTextIndexRef.current += 1;
+                        currentCharIndexRef.current  = 0;
+                        isWaitingRef.current         = false;
+                        onSentenceComplete?.(currentString, tIdx);
+                        scheduleNext();
+                    }, pauseDuration);
+                } else {
+                    // All text done
+                    onSentenceComplete?.(currentString, tIdx);
+                    // Stop — no more scheduling
+                    updateCursorPause();
+                }
+                return;
+            }
+
+            // Type the next character directly into the DOM — no React setState
+            displayedTextRef.current += currentString[cIdx];
+            if (contentRef.current) {
+                contentRef.current.textContent = displayedTextRef.current;
+            }
+            currentCharIndexRef.current += 1;
+
+            timeoutRef.current = setTimeout(tick, typingSpeed);
+        };
+
+        timeoutRef.current = setTimeout(tick, 0);
+    };
+
+    // ─── Cursor management (GSAP, direct DOM, no React state) ────────────────────
+    const updateCursorPause = () => {
+        const cursor = cursorRef.current;
+        if (!cursor) return;
+
+        const tIdx = currentTextIndexRef.current;
+        const arr  = textArrayRef.current;
+        const finished = tIdx >= arr.length ||
+            (tIdx === arr.length - 1 && currentCharIndexRef.current >= arr[tIdx]?.length);
+        const shouldPause = isIdleRef.current && finished;
+
+        if (shouldPause) {
+            cursorAnimRef.current?.kill();
+            cursorAnimRef.current = null;
+            gsap.set(cursor, { opacity: 1 });
+        }
+    };
+
+    const startCursorBlink = () => {
+        const cursor = cursorRef.current;
+        if (!cursor || !showCursor || !isVisibleRef.current) return;
+
+        cursorAnimRef.current?.kill();
+        gsap.set(cursor, { opacity: 1 });
+        cursorAnimRef.current = gsap.to(cursor, {
+            opacity: 0,
+            duration: cursorBlinkDuration,
+            repeat: -1,
+            yoyo: true,
+            ease: 'power2.inOut',
+        });
+    };
+
+    const stopCursorBlink = () => {
+        cursorAnimRef.current?.kill();
+        cursorAnimRef.current = null;
+    };
+
+    // ─── Lifecycle ───────────────────────────────────────────────────────────────
+    useEffect(() => {
+        isUnmountedRef.current = false;
+
+        // Reset animation state when text prop changes
+        if (timeoutRef.current !== null) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
+        currentTextIndexRef.current = 0;
+        currentCharIndexRef.current = 0;
+        displayedTextRef.current    = '';
+        isWaitingRef.current        = false;
+        if (contentRef.current) contentRef.current.textContent = '';
+
+        if (!isVisibleRef.current) return; // wait for visibility
+
+        const start = () => {
+            if (initialDelay > 0) {
+                isWaitingRef.current = true;
+                timeoutRef.current = setTimeout(() => {
+                    if (isUnmountedRef.current) return;
+                    isWaitingRef.current = false;
+                    scheduleNext();
+                }, initialDelay);
+            } else {
+                scheduleNext();
+            }
+            startCursorBlink();
+        };
+
+        start();
+
+        return () => {
+            isUnmountedRef.current = true;
+            if (timeoutRef.current !== null) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
+            stopCursorBlink();
+        };
+    // Only re-run when props that configure the animation change.
+    // `scheduleNext` / `startCursorBlink` are stable closures defined in the component body.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [text, typingSpeed, pauseDuration, initialDelay, showCursor, cursorBlinkDuration]);
+
+    // ─── Intersection Observer (only when startOnVisible=true) ──────────────────
     useEffect(() => {
         if (!startOnVisible || !containerRef.current) return;
 
         const observer = new IntersectionObserver(
             entries => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        setIsVisible(true);
+                    if (entry.isIntersecting && !isVisibleRef.current) {
+                        isVisibleRef.current = true;
+                        // Start the engine now that we are visible
+                        scheduleNext();
+                        startCursorBlink();
                     }
                 });
             },
@@ -72,105 +226,27 @@ const TextType: React.FC<TextTypeProps> = ({
 
         observer.observe(containerRef.current);
         return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [startOnVisible]);
 
-    // Cursor Animation
+    // ─── Pause cursor when user goes idle and typing is finished ─────────────────
     useEffect(() => {
-        if (showCursor && cursorRef.current && isVisible && !shouldPauseCursor) {
-            gsap.set(cursorRef.current, { opacity: 1 });
-            const anim = gsap.to(cursorRef.current, {
-                opacity: 0,
-                duration: cursorBlinkDuration,
-                repeat: -1,
-                yoyo: true,
-                ease: 'power2.inOut'
-            });
-            return () => {
-                anim.kill();
-            };
-        } else if (shouldPauseCursor && cursorRef.current) {
-            gsap.set(cursorRef.current, { opacity: 1 });
-        }
-    }, [showCursor, cursorBlinkDuration, isVisible, shouldPauseCursor]);
+        updateCursorPause();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isIdle]);
 
-    // Main Typing Logic
-    useEffect(() => {
-        if (!isVisible) return;
-        if (isWaiting.current) return;
-
-        // Check if we are done with all text
-        if (currentTextIndex >= textArray.length) return;
-
-        const currentString = textArray[currentTextIndex];
-        let timeout: NodeJS.Timeout;
-
-        // Safety check
-        if (currentCharIndex >= currentString.length) {
-            // Finished current string
-            if (currentTextIndex < textArray.length - 1) {
-                // Prepare for next string
-                isWaiting.current = true;
-                timeout = setTimeout(() => {
-                    setDisplayedText(prev => prev + '\n\n');
-                    setCurrentTextIndex(prev => prev + 1);
-                    setCurrentCharIndex(0);
-                    isWaiting.current = false;
-                    // Optional: Trigger callback
-                    if (onSentenceComplete) onSentenceComplete(currentString, currentTextIndex);
-                }, pauseDuration);
-            } else {
-                // Finished everything
-                if (onSentenceComplete) onSentenceComplete(currentString, currentTextIndex);
-            }
-            return () => clearTimeout(timeout);
-        }
-
-        // Typing character
-        timeout = setTimeout(() => {
-            setDisplayedText(prev => prev + currentString[currentCharIndex]);
-            setCurrentCharIndex(prev => prev + 1);
-        }, typingSpeed);
-
-        return () => clearTimeout(timeout);
-
-    }, [
-        currentCharIndex,
-        currentTextIndex,
-        // isWaiting ref not needed in deps
-        isVisible,
-        textArray,
-        typingSpeed,
-        pauseDuration,
-        onSentenceComplete,
-        initialDelay // Note: Initial delay logic is simplified here as we start immediately if visible
-    ]);
-
-    // Handle Initial Delay specifically for the very first start
-    useEffect(() => {
-        if (isVisible && initialDelay > 0 && displayedText === '' && currentTextIndex === 0) {
-            isWaiting.current = true;
-            const timer = setTimeout(() => { isWaiting.current = false; }, initialDelay);
-            return () => clearTimeout(timer);
-        }
-    }, [isVisible, initialDelay, displayedText, currentTextIndex]);
-
-
-    const shouldHideCursor =
-        hideCursorWhileTyping && !isWaiting.current && currentTextIndex < textArray.length;
-
+    // ─── JSX — static shell; text content is written directly to contentRef ──────
     return createElement(
         Component,
         {
             ref: containerRef,
             className: `text-type ${className}`,
         },
-        <span className="text-type__content">
-            {displayedText}
-        </span>,
+        <span ref={contentRef} className="text-type__content" />,
         showCursor && (
             <span
                 ref={cursorRef}
-                className={`text-type__cursor ${cursorClassName} ${shouldHideCursor ? 'text-type__cursor--hidden' : ''}`}
+                className={`text-type__cursor ${cursorClassName} ${hideCursorWhileTyping ? 'text-type__cursor--hidden' : ''}`}
             >
                 {cursorCharacter}
             </span>

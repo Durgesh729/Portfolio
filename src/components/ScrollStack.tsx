@@ -261,10 +261,16 @@ const ScrollStack = ({
 
             lenis.on('scroll', handleScroll);
 
+            // Only tick Lenis while the component is visible.
+            // Previously the RAF was unconditional — it kept running 60fps even
+            // when the Projects section was completely off-screen (e.g. user on HeroSection).
             const raf = (time: number) => {
-                if (isIntersectingRef.current) {
-                    lenis.raf(time);
+                if (!isIntersectingRef.current) {
+                    // Stop the loop — it will be restarted by the IntersectionObserver
+                    animationFrameRef.current = null;
+                    return;
                 }
+                lenis.raf(time);
                 animationFrameRef.current = requestAnimationFrame(raf);
             };
             animationFrameRef.current = requestAnimationFrame(raf);
@@ -361,6 +367,20 @@ const ScrollStack = ({
                 isIntersectingRef.current = entry.isIntersecting;
                 if (entry.isIntersecting) {
                     updateCardTransforms();
+                    // If we're using local Lenis scroll and the RAF loop was paused
+                    // because the component was off-screen, restart it now.
+                    if (!useWindowScroll && lenisRef.current && animationFrameRef.current === null) {
+                        const lenis = lenisRef.current;
+                        const raf = (time: number) => {
+                            if (!isIntersectingRef.current) {
+                                animationFrameRef.current = null;
+                                return;
+                            }
+                            lenis.raf(time);
+                            animationFrameRef.current = requestAnimationFrame(raf);
+                        };
+                        animationFrameRef.current = requestAnimationFrame(raf);
+                    }
                 }
             },
             { threshold: 0 }
@@ -370,7 +390,7 @@ const ScrollStack = ({
         return () => {
             observer.disconnect();
         };
-    }, [updateCardTransforms]);
+    }, [updateCardTransforms, useWindowScroll]);
 
     return (
         <div className={`scroll-stack-scroller ${className}`.trim()} ref={scrollerRef}>

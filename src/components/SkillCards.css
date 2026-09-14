@@ -47,6 +47,7 @@
     gap: 4rem;
     padding: 15vh 10vw 0;
     box-sizing: border-box;
+    will-change: transform;
 }
 
 @media (max-width: 768px) {

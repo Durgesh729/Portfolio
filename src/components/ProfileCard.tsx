@@ -25,8 +25,8 @@ export default function ProfileCard({
     const cardRef = useRef<HTMLDivElement>(null);
     const glowRef = useRef<HTMLDivElement>(null);
     const glareRef = useRef<HTMLDivElement>(null);
-    const [tilt, setTilt] = useState({ x: 0, y: 0 });
-    const [isHovering, setIsHovering] = useState(false);
+    // Use a ref instead of state so tilt updates bypass React's render cycle entirely.
+    // The transform is applied directly to the DOM element in the RAF loop.
     const animationRef = useRef<number>();
 
     const [imageError, setImageError] = useState(false);
@@ -39,6 +39,13 @@ export default function ProfileCard({
         let currentTilt = { x: 0, y: 0 };
         let rect: DOMRect | null = null;
         let animating = false;
+        // Track hover state in a ref — no state needed here either
+        let hovering = false;
+
+        const applyTransform = (x: number, y: number, transition: string) => {
+            card.style.transition = transition;
+            card.style.transform = `perspective(1000px) rotateX(${x}deg) rotateY(${y}deg)`;
+        };
 
         const animate = () => {
             const dx = targetTilt.x - currentTilt.x;
@@ -49,11 +56,12 @@ export default function ProfileCard({
                     x: currentTilt.x + dx * 0.1,
                     y: currentTilt.y + dy * 0.1
                 };
-                setTilt({ x: currentTilt.x, y: currentTilt.y });
+                // Write directly to DOM — no React setState, no re-render
+                applyTransform(currentTilt.x, currentTilt.y, 'none');
                 animationRef.current = requestAnimationFrame(animate);
             } else {
                 currentTilt = { x: targetTilt.x, y: targetTilt.y };
-                setTilt({ x: currentTilt.x, y: currentTilt.y });
+                applyTransform(currentTilt.x, currentTilt.y, hovering ? 'none' : 'transform 0.5s ease-out');
                 animating = false;
                 animationRef.current = undefined;
             }
@@ -76,10 +84,10 @@ export default function ProfileCard({
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
 
-            const rotateX = ((y - centerY) / centerY) * -15;
-            const rotateY = ((x - centerX) / centerX) * 15;
-
-            targetTilt = { x: rotateX, y: rotateY };
+            targetTilt = {
+                x: ((y - centerY) / centerY) * -15,
+                y: ((x - centerX) / centerX) * 15
+            };
             startAnimating();
 
             if (glowRef.current) {
@@ -98,8 +106,8 @@ export default function ProfileCard({
 
         const handlePointerLeave = () => {
             rect = null;
+            hovering = false;
             targetTilt = { x: 0, y: 0 };
-            setIsHovering(false);
             if (glareRef.current) {
                 glareRef.current.style.opacity = '0';
             }
@@ -108,7 +116,7 @@ export default function ProfileCard({
 
         const handlePointerEnter = () => {
             rect = card.getBoundingClientRect();
-            setIsHovering(true);
+            hovering = true;
             startAnimating();
         };
 
@@ -137,10 +145,8 @@ export default function ProfileCard({
             <div
                 ref={cardRef}
                 className="pc-card"
-                style={{
-                    transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-                    transition: isHovering ? 'none' : 'transform 0.5s ease-out',
-                }}
+                // Static baseline — actual tilt is applied via DOM ref in the RAF loop
+                style={{ transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg)' }}
             >
                 <div className="pc-image-section">
                     {!imageError ? (

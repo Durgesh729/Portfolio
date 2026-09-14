@@ -41,7 +41,7 @@ export function initZigZagSkillRail({
     };
 
     let yAmplitude = getYAmplitude();
-    
+
     // Cache card offsets (relative to rail start) + half width
     let cardOffsets: number[] = [];
     const cacheCardOffsets = () => {
@@ -53,9 +53,20 @@ export function initZigZagSkillRail({
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const prefersReducedMotion = mediaQuery.matches;
 
+    // Cache xStart / xEnd so we don't re-read offsetLeft/offsetWidth on every
+    // GSAP onUpdate tick (which was causing repeated forced layout reads).
+    const firstCard = cards[0];
+    const lastCard = cards[cards.length - 1];
+
+    let cachedXStart = window.innerWidth / 2 - (firstCard.offsetLeft + firstCard.offsetWidth / 2);
+    let cachedXEnd   = window.innerWidth / 2 - (lastCard.offsetLeft  + lastCard.offsetWidth  / 2);
+
     const handleResize = () => {
         yAmplitude = getYAmplitude();
         cacheCardOffsets();
+        // Recompute cached positions on resize — the only correct time to read layout
+        cachedXStart = window.innerWidth / 2 - (firstCard.offsetLeft + firstCard.offsetWidth / 2);
+        cachedXEnd   = window.innerWidth / 2 - (lastCard.offsetLeft  + lastCard.offsetWidth  / 2);
         ScrollTrigger.refresh();
     };
 
@@ -84,19 +95,8 @@ export function initZigZagSkillRail({
     });
 
     // --- ANIMATION TIMELINES ---
-    const firstCard = cards[0];
-    const lastCard = cards[cards.length - 1];
-
-    const getXStart = () => {
-        return window.innerWidth / 2 - (firstCard.offsetLeft + firstCard.offsetWidth / 2);
-    };
-
-    const getXEnd = () => {
-        return window.innerWidth / 2 - (lastCard.offsetLeft + lastCard.offsetWidth / 2);
-    };
-
     // Set initial position of the rail so Python card starts in the middle
-    gsap.set(rail, { x: getXStart });
+    gsap.set(rail, { x: cachedXStart });
 
     const tl = gsap.timeline({
         scrollTrigger: {
@@ -105,14 +105,19 @@ export function initZigZagSkillRail({
             end: `+=${totalPinnedHeight}`,
             scrub: 1,
             invalidateOnRefresh: true,
+            onRefresh: () => {
+                // Sync cached positions whenever GSAP refreshes layout
+                cachedXStart = window.innerWidth / 2 - (firstCard.offsetLeft + firstCard.offsetWidth / 2);
+                cachedXEnd   = window.innerWidth / 2 - (lastCard.offsetLeft  + lastCard.offsetWidth  / 2);
+            }
         }
     });
 
     // Horizontal Motion: Move rail from xStart (Python card centered) to xEnd (Docker card centered)
     tl.fromTo(rail,
-        { x: () => getXStart() },
+        { x: () => cachedXStart },
         {
-            x: () => getXEnd(),
+            x: () => cachedXEnd,
             ease: 'none',
         }
     );
@@ -122,12 +127,11 @@ export function initZigZagSkillRail({
         // High-performance GSAP quickSetter for Y position to bypass parsing overhead
         const ySetters = cards.map(card => gsap.quickSetter(card, "y", "px"));
 
-        // Single update loop for all cards
+        // Single update loop for all cards — uses only cached values, no layout reads
         tl.eventCallback("onUpdate", () => {
             const p = tl.progress();
-            const xStart = getXStart();
-            const xEnd = getXEnd();
-            const railX = xStart + (xEnd - xStart) * p;
+            // Use pre-cached positions — avoids DOM layout reads on every scrub frame
+            const railX = cachedXStart + (cachedXEnd - cachedXStart) * p;
             const centerScreen = window.innerWidth / 2;
 
             cards.forEach((card, index) => {
@@ -162,3 +166,4 @@ export function initZigZagSkillRail({
         gsap.set(cards, { clearProps: 'all' });
     };
 }
+

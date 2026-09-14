@@ -106,7 +106,12 @@ const PillNav = ({
 
         layout();
 
-        const onResize = () => layout();
+        // Debounce resize to avoid multiple getBoundingClientRect reads per resize burst
+        let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+        const onResize = () => {
+            if (resizeTimer !== null) clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(layout, 100);
+        };
         window.addEventListener('resize', onResize);
 
         if (document.fonts?.ready) {
@@ -147,6 +152,7 @@ const PillNav = ({
 
         return () => {
             window.removeEventListener('resize', onResize);
+            if (resizeTimer !== null) clearTimeout(resizeTimer);
             currentTimelines.forEach(tl => tl?.kill());
             currentTweens.forEach(t => t?.kill());
             currentLogoTween?.kill();
@@ -154,9 +160,17 @@ const PillNav = ({
     }, [items, ease, initialLoadAnimation]);
 
     useEffect(() => {
+        // Track current scroll state in a ref — only call setIsScrolled when the
+        // boolean value actually changes. Previously it fired on every scroll event,
+        // re-rendering the entire PillNav on each tick.
+        const isScrolledRef = { current: false };
+
         const handleScroll = () => {
             const scrolled = window.scrollY > 20;
-            setIsScrolled(scrolled);
+            if (scrolled !== isScrolledRef.current) {
+                isScrolledRef.current = scrolled;
+                setIsScrolled(scrolled);
+            }
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });

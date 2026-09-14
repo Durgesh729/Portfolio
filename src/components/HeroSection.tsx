@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import "./HeroSection.css";
 
 // ─── Frame Config ─────────────────────────────────────────────────────────────
-const TOTAL_FRAMES  = 139;    // actual frame count (002.jpg to 140.jpg is 139 frames)
-const FRAME_START   = 2;      // first file: 002.jpg
+const TOTAL_FRAMES  = 112;    // actual frame count (frame_000000.jpg to frame_000111.jpg is 112 frames)
+const FRAME_START   = 0;      // first file index: 0
 const STAGE1_COUNT  = 5;      // frames to load before revealing canvas
 
 const HeroSection = () => {
@@ -108,7 +108,9 @@ const HeroSection = () => {
 
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      const scrollRange = 1000; // Matches parent height scroll padding
+      // Derive scroll range from viewport height so animation completes
+      // at the same visual proportion regardless of screen size.
+      const scrollRange = window.innerHeight;
       const progress = Math.min(1, Math.max(0, scrollY / scrollRange));
       const nextTarget = Math.round(progress * (TOTAL_FRAMES - 1));
 
@@ -145,8 +147,8 @@ const HeroSection = () => {
     const loadFrame = (index: number): Promise<void> =>
       new Promise((resolve) => {
         const img = new Image();
-        const num = (FRAME_START + index).toString().padStart(3, "0");
-        img.src   = `/herosectionframes/${num}.webp`;
+        const num = (FRAME_START + index).toString().padStart(6, "0");
+        img.src   = `/herosectionframes/frame_${num}.jpg`;
         
         // Decode off-main-thread to avoid UI micro-stutters during loading
         img.decode()
@@ -154,6 +156,13 @@ const HeroSection = () => {
             imagesRef.current[index] = img;
             if (index > maxLoadedRef.current) maxLoadedRef.current = index;
             if (index === 0) drawFrame(0);
+
+            // Race-condition fix: if the RAF loop already converged while this
+            // frame was still decoding, the canvas may be stuck on an earlier
+            // frame. Nudge a redraw now that this frame is available.
+            if (rafIdRef.current === null && index <= targetFrameRef.current) {
+              drawFrame(Math.round(currentFrameRef.current));
+            }
             resolve();
           })
           .catch(() => {
@@ -161,6 +170,11 @@ const HeroSection = () => {
             imagesRef.current[index] = img;
             if (index > maxLoadedRef.current) maxLoadedRef.current = index;
             if (index === 0) drawFrame(0);
+
+            // Same nudge in the error/fallback path
+            if (rafIdRef.current === null && index <= targetFrameRef.current) {
+              drawFrame(Math.round(currentFrameRef.current));
+            }
             resolve();
           });
       });
