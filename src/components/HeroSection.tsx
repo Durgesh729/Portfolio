@@ -148,7 +148,7 @@ const HeroSection = () => {
       new Promise((resolve) => {
         const img = new Image();
         const num = (FRAME_START + index).toString().padStart(6, "0");
-        img.src   = `/herosectionframes/frame_${num}.jpg`;
+        img.src   = `/herosectionframes/frame_${num}.webp`;
         
         // Decode off-main-thread to avoid UI micro-stutters during loading
         img.decode()
