@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
+import ElectricLogo from '../ElectricLogo';
 import './PillNav.css';
 
 interface NavItem {
@@ -212,6 +213,50 @@ const PillNav = ({
         });
     };
 
+    const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+        if (href.startsWith('#')) {
+            e.preventDefault();
+            const targetId = href.slice(1);
+
+            // Signal any lazy sections to load their content immediately
+            window.dispatchEvent(new CustomEvent('lazysection:loadall'));
+
+            if (targetId === 'home') {
+                if (window.lenisInstance) {
+                    window.lenisInstance.start();
+                    window.lenisInstance.scrollTo(0, { duration: 1.2 });
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                window.history.pushState(null, '', href);
+                return;
+            }
+
+            const targetEl = document.getElementById(targetId);
+            if (targetEl) {
+                const extraOffset = targetId === 'contact' ? window.innerHeight * 0.9 : 0;
+
+                const scrollToElement = () => {
+                    const rect = targetEl.getBoundingClientRect();
+                    const targetY = rect.top + window.scrollY + extraOffset;
+
+                    if (window.lenisInstance) {
+                        window.lenisInstance.start();
+                        window.lenisInstance.scrollTo(targetY, { duration: 1.2 });
+                    } else {
+                        window.scrollTo({ top: targetY, behavior: 'smooth' });
+                    }
+                };
+
+                scrollToElement();
+                // Re-evaluate in case any lazy loaded section dynamically expanded the layout
+                setTimeout(scrollToElement, 60);
+
+                window.history.pushState(null, '', href);
+            }
+        }
+    };
+
     const toggleMobileMenu = () => {
         const newState = !isMobileMenuOpen;
         setIsMobileMenuOpen(newState);
@@ -296,7 +341,26 @@ const PillNav = ({
                                 logoRef.current = el; // Correctly assigning ref to HTMLAnchorElement
                             }}
                         >
-                            {logo ? <img src={logo} alt={logoAlt} ref={logoImgRef} /> : <span className="text-white font-bold">DP</span>}
+                            {logo ? (
+                                <img src={logo} alt={logoAlt} ref={logoImgRef} />
+                            ) : (
+                                <div className="pill-logo-electric">
+                                    <ElectricLogo
+                                        color="#ffffff"
+                                        glowColor="#a855f7"
+                                        scale={0.78}
+                                        strands={2}
+                                        bend={0.25}
+                                        crackle={0.9}
+                                        arcs={1}
+                                        speed={2.0}
+                                        interactive={true}
+                                        intensity={1.3}
+                                        glow={0.5}
+                                        thickness={0.5}
+                                    />
+                                </div>
+                            )}
                         </Link>
                     ) : (
                         <a
@@ -304,11 +368,31 @@ const PillNav = ({
                             href={items[0].href}
                             aria-label="Home"
                             onMouseEnter={handleLogoEnter}
+                            onClick={(e) => handleAnchorClick(e, items[0].href)}
                             ref={(el) => {
                                 logoRef.current = el; // Correctly assigning ref to HTMLAnchorElement
                             }}
                         >
-                            {logo ? <img src={logo} alt={logoAlt} ref={logoImgRef} /> : <span className="text-white font-bold">DP</span>}
+                            {logo ? (
+                                <img src={logo} alt={logoAlt} ref={logoImgRef} />
+                            ) : (
+                                <div className="pill-logo-electric">
+                                    <ElectricLogo
+                                        color="#ffffff"
+                                        glowColor="#a855f7"
+                                        scale={0.78}
+                                        strands={2}
+                                        bend={0.25}
+                                        crackle={0.9}
+                                        arcs={1}
+                                        speed={2.0}
+                                        interactive={true}
+                                        intensity={1.3}
+                                        glow={0.5}
+                                        thickness={0.5}
+                                    />
+                                </div>
+                            )}
                         </a>
                     )
                 )}
@@ -349,6 +433,7 @@ const PillNav = ({
                                         aria-label={item.ariaLabel || item.label}
                                         onMouseEnter={() => handleEnter(i)}
                                         onMouseLeave={() => handleLeave(i)}
+                                        onClick={(e) => handleAnchorClick(e, item.href)}
                                     >
                                         <span
                                             className="hover-circle"
@@ -397,7 +482,10 @@ const PillNav = ({
                                 <a
                                     href={item.href}
                                     className={`mobile-menu-link${activeHref === item.href ? ' is-active' : ''}`}
-                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    onClick={(e) => {
+                                        setIsMobileMenuOpen(false);
+                                        handleAnchorClick(e, item.href);
+                                    }}
                                 >
                                     {item.label}
                                 </a>

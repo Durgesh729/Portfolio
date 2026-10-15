@@ -26,7 +26,10 @@
 
 .scroll-stack-card {
     will-change: transform, filter;
-    /* Default styling or specific needs */
+    transition: none !important;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
 }
 
 .scroll-stack-end {

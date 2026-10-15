@@ -26,8 +26,7 @@ export default function ProfileCard({
     const glowRef = useRef<HTMLDivElement>(null);
     const glareRef = useRef<HTMLDivElement>(null);
     // Use a ref instead of state so tilt updates bypass React's render cycle entirely.
-    // The transform is applied directly to the DOM element in the RAF loop.
-    const animationRef = useRef<number>();
+    const animationRef = useRef<number | undefined>(undefined);
 
     const [imageError, setImageError] = useState(false);
 
@@ -145,8 +144,6 @@ export default function ProfileCard({
             <div
                 ref={cardRef}
                 className="pc-card"
-                // Static baseline — actual tilt is applied via DOM ref in the RAF loop
-                style={{ transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg)' }}
             >
                 <div className="pc-image-section">
                     {!imageError ? (
@@ -157,7 +154,7 @@ export default function ProfileCard({
                             onError={() => setImageError(true)}
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 text-6xl font-bold text-white/50">
+                        <div className="pc-avatar-fallback">
                             {name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                         </div>
                     )}

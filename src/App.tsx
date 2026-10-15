@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import GlobalErrorBoundary from "@/components/GlobalErrorBoundary";
 import SmoothScroll from "@/components/SmoothScroll";
 import { IdleProvider } from "@/hooks/useIdle";
+import TargetCursor from "@/components/TargetCursor";
 
 const queryClient = new QueryClient();
 
@@ -16,6 +17,13 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <IdleProvider timeout={5000}>
       <TooltipProvider>
+        <TargetCursor
+          spinDuration={3}
+          hoverDuration={0.2}
+          parallaxOn={true}
+          cursorColor="#ffffff"
+          cursorColorOnTarget="#B497CF"
+        />
         <Toaster />
         <Sonner />
         <GlobalErrorBoundary>

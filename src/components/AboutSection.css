@@ -1180,7 +1180,7 @@
   z-index: 1;
   pointer-events: none;
   width: 100%;
-  left: 29px;
+  left: 0;
 }
 
 .trigger-wrapper {
@@ -1189,34 +1189,58 @@
   display: flex;
   justify-content: stretch;
   width: 100%;
+  max-width: 100%;
   pointer-events: auto;
 }
 
+@media (min-width: 640px) {
+  .trigger-wrapper {
+    max-width: calc(50% - 8px);
+  }
+}
+
+.workflow-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(70, 75, 196, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(70, 75, 196, 0.35);
+  margin-bottom: 2px;
+}
+
 .merge-btn {
-  background: linear-gradient(135deg, #090a1f 0%, #111333 100%);
-  border: 1px solid rgba(70, 75, 196, 0.25);
-  box-shadow: 0 4px 24px rgba(70, 75, 196, 0.1);
+  background: hsl(var(--card) / 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow: var(--shadow-card);
   color: #ffffff;
-  padding: 24px 20px;
-  border-radius: 18px;
+  padding: 16px 14px;
+  min-height: auto;
+  border-radius: 1rem;
   cursor: pointer;
   font-size: 16px;
   font-weight: 700;
   font-family: inherit;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 10;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: flex-start;
+  gap: 8px;
   width: 100%;
 }
 
 .merge-btn:hover {
-  background: linear-gradient(135deg, #090a1f 0%, #111333 100%);
-  border-color: rgba(70, 75, 196, 0.5);
+  background: hsl(var(--card) / 0.75);
+  border-color: hsl(var(--border) / 0.8);
   color: #ffffff;
-  box-shadow: 0 8px 36px rgba(70, 75, 196, 0.25);
+  box-shadow: var(--shadow-glow), var(--shadow-card);
   transform: translateY(-4px);
 }
 
@@ -1324,6 +1348,21 @@
   opacity: 1;
 }
 
+/* Decorative resume button SVGs should never intercept mouse events or block neighboring cards */
+.big-lock,
+.ripple,
+.particles,
+.clank,
+.key {
+  pointer-events: none !important;
+}
+
+/* ── Card 1: Programming Terminal Card ── */
+.feature-card--terminal {
+  position: relative;
+  z-index: 20;
+}
+
 /* ── Card 2: Resume Button Slot ── */
 .feature-card--resume-slot {
   background: transparent !important;
@@ -1333,10 +1372,12 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  overflow: visible !important;
+  overflow: hidden;
   position: relative;
-  left: 25px;
-  top: -15px;
+  pointer-events: none;
+}
+.feature-card--resume-slot .swipe {
+  pointer-events: auto !important;
 }
 .feature-card--resume-slot:hover {
   transform: none !important;
@@ -1355,4 +1396,306 @@
   .feature-card--resume-slot .conti {
     transform: scale(1);
   }
+}
+
+/* ================= ABOUT SECTION REDESIGN ================= */
+.about-cursive-name {
+  font-family: 'Caveat', cursive, sans-serif;
+}
+
+/* Laptop Mockup Container */
+.about-laptop-container {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  min-height: 380px;
+  aspect-ratio: 580 / 380;
+  contain: layout;
+  margin: 0 auto;
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+}
+
+.about-laptop {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-style: preserve-3d;
+}
+
+/* Screen Lid with 3D hinge at bottom */
+.about-laptop-lid {
+  width: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transform-origin: 50% 100% 0;
+  transform: rotateX(-88.5deg);
+  will-change: transform;
+}
+
+/* Front Face: The Screen, Bezel, Camera, and interactive Download Button */
+.about-laptop-lid-front {
+  width: 100%;
+  background: linear-gradient(180deg, #2b2c30 0%, #1c1d21 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px 18px 0 0;
+  padding: 10px 12px 0 12px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15),
+              0 4px 20px rgba(0, 0, 0, 0.6);
+  position: relative;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: rotateX(0deg);
+}
+
+
+/* Back Face: Outer aluminum lid cover (visible when closed) */
+.about-laptop-lid-back {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #18191d 0%, #25262c 50%, #121316 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 18px 18px 0 0;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.22),
+              0 15px 35px rgba(0, 0, 0, 0.9);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.about-laptop-back-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.about-laptop-back-badge {
+  position: relative;
+  z-index: 2;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 35% 35%, #2a2c34 0%, #111215 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 18px rgba(0, 242, 255, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.about-laptop-back-logo {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, #00f2ff 0%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Inner Black Bezel */
+.about-laptop-bezel {
+  width: 100%;
+  background: #000000;
+  border-radius: 8px 8px 0 0;
+  padding-top: 10px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Webcam dot */
+.about-laptop-camera {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #0d0d11;
+  box-shadow: 0 0 1px 1px rgba(255, 255, 255, 0.08), inset 0 0 2px #00f2ff;
+  z-index: 5;
+}
+
+/* Display Screen */
+.about-laptop-screen {
+  width: 100%;
+  height: 330px;
+  background: radial-gradient(circle at center, #070a1a 0%, #03040a 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  border-radius: 4px 4px 0 0;
+}
+
+@media (max-width: 640px) {
+  .about-laptop-screen {
+    height: 250px;
+  }
+}
+
+.about-laptop-screen .conti {
+  pointer-events: none;
+  position: relative;
+  z-index: 10;
+}
+
+.about-laptop-screen .swipe {
+  pointer-events: auto !important;
+}
+
+/* Subtle Screen Glass Glare */
+.about-laptop-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.015) 30%,
+    transparent 55%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Subtle background glow inside screen */
+.about-laptop-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(70, 75, 196, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hinge */
+.about-laptop-hinge {
+  width: 100%;
+  height: 4px;
+  background: #111215;
+  border-top: 1px solid #1f2026;
+  position: relative;
+  z-index: 3;
+}
+
+/* Lower Chassis / Base */
+.about-laptop-base {
+  width: 104%;
+  height: 18px;
+  background: linear-gradient(180deg, #383a42 0%, #24252c 45%, #131418 100%);
+  border-radius: 2px 2px 14px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.8);
+  position: relative;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35),
+              0 4px 12px rgba(0, 0, 0, 0.7),
+              0 15px 35px rgba(0, 0, 0, 0.9);
+  z-index: 10;
+  transform-origin: 50% 50% 0;
+  transform: translateY(46px) scaleX(1.42);
+  will-change: transform;
+}
+
+/* Front Opening Lip / Thumb Notch */
+.about-laptop-notch {
+  width: 72px;
+  height: 5px;
+  background: #08080a;
+  margin: 0 auto;
+  border-radius: 0 0 6px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-top: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.95), 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Ambient shadow beneath laptop */
+.about-laptop-shadow {
+  width: 90%;
+  height: 20px;
+  margin: 0 auto;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.85) 0%, transparent 75%);
+  filter: blur(8px);
+  transform: translateY(46px) scaleX(1.35);
+  will-change: transform, opacity;
+}
+
+/* Neon Download Resume Button inside Laptop */
+.laptop-resume-btn {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 28px 6px 8px;
+  background: rgba(8, 12, 32, 0.85);
+  border: 2px solid #2563eb;
+  border-radius: 9999px;
+  box-shadow: 0 0 25px rgba(37, 99, 235, 0.6),
+              0 0 10px rgba(59, 130, 246, 0.4),
+              inset 0 0 15px rgba(37, 99, 235, 0.2);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  user-select: none;
+}
+
+.laptop-resume-btn:hover {
+  transform: scale(1.04);
+  border-color: #3b82f6;
+  box-shadow: 0 0 35px rgba(59, 130, 246, 0.85),
+              0 0 15px rgba(59, 130, 246, 0.5),
+              inset 0 0 20px rgba(37, 99, 235, 0.35);
+}
+
+.laptop-resume-btn:active {
+  transform: scale(0.98);
+}
+
+.laptop-resume-knob {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.8),
+              inset 0 1px 2px rgba(255, 255, 255, 0.5);
+  transition: transform 0.3s ease;
+}
+
+.laptop-resume-btn:hover .laptop-resume-knob {
+  transform: scale(1.05);
+  box-shadow: 0 0 18px rgba(59, 130, 246, 1);
+}
+
+.laptop-resume-label {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-family: inherit;
+  white-space: nowrap;
 }

@@ -45,50 +45,64 @@
   display: flex;
   align-items: center;
   height: var(--nav-h);
-  height: var(--nav-h);
-  background: rgba(255, 255, 255, 0) !important;
-  /* Initial transparent state */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0);
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
   border-radius: 9999px;
   margin-left: 10px;
-  /* Separator from logo */
-  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: none !important;
 }
 
 .pill-nav-items.scrolled {
-  background: rgba(3, 3, 3, 0) !important;
-  /* Darker glass on scroll */
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .pill-logo {
-  width: var(--nav-h);
+  width: 50px;
   height: var(--nav-h);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 8px;
+  border-radius: 9999px;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.pill-logo:hover {
+  transform: scale(1.06);
+  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));
 }
 
 .pill-logo.scrolled {
-  background: rgba(10, 10, 15, 0.75) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.pill-logo-electric {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: transparent;
+  overflow: visible;
 }
 
 .pill-logo img {
@@ -212,21 +226,21 @@
   height: var(--nav-h);
   border-radius: 50%;
   padding: 0;
-  padding: 0;
   position: relative;
-  background: rgba(255, 255, 255, 0.03) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mobile-menu-button.scrolled {
-  background: rgba(10, 10, 15, 0.75) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 @media (max-width: 768px) {

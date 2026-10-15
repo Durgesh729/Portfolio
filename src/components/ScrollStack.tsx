@@ -84,39 +84,43 @@ const ScrollStack = ({
         }
     }, [useWindowScroll]);
 
+    const rafIdRef = useRef<number | null>(null);
+
     const measureInitialTops = useCallback(() => {
         if (!cardsRef.current.length) return;
 
-        // Temporarily clear any active transforms to read accurate static offsets
-        const previousTransforms = cardsRef.current.map((card) => {
-            const transform = card.style.transform;
-            card.style.transform = '';
-            return transform;
-        });
+        const scroller = scrollerRef.current;
 
         initialTopsRef.current = cardsRef.current.map((card) => {
+            if (!card) return 0;
             if (useWindowScroll) {
-                const rect = card.getBoundingClientRect();
-                return rect.top + window.scrollY;
+                let top = 0;
+                let curr: HTMLElement | null = card;
+                while (curr) {
+                    top += curr.offsetTop;
+                    curr = curr.offsetParent as HTMLElement | null;
+                }
+                return top;
             } else {
                 return card.offsetTop;
             }
         });
 
-        const endElement = scrollerRef.current?.querySelector('.scroll-stack-end') as HTMLElement;
+        const endElement = scroller?.querySelector('.scroll-stack-end') as HTMLElement;
         if (endElement) {
             if (useWindowScroll) {
-                initialEndTopRef.current = endElement.getBoundingClientRect().top + window.scrollY;
+                let top = 0;
+                let curr: HTMLElement | null = endElement;
+                while (curr) {
+                    top += curr.offsetTop;
+                    curr = curr.offsetParent as HTMLElement | null;
+                }
+                initialEndTopRef.current = top;
             } else {
                 initialEndTopRef.current = endElement.offsetTop;
             }
         }
-
-        // Restore transforms
-        cardsRef.current.forEach((card, i) => {
-            card.style.transform = previousTransforms[i];
-        });
-    }, [useWindowScroll, getScrollData]);
+    }, [useWindowScroll]);
 
     const updateCardTransforms = useCallback(() => {
         if (!cardsRef.current.length || isUpdatingRef.current) return;
@@ -186,10 +190,10 @@ const ScrollStack = ({
             const lastTransform = lastTransformsRef.current.get(i);
             const hasChanged =
                 !lastTransform ||
-                Math.abs(lastTransform.translateY - newTransform.translateY) > 0.1 ||
-                Math.abs(lastTransform.scale - newTransform.scale) > 0.001 ||
-                Math.abs(lastTransform.rotation - newTransform.rotation) > 0.1 ||
-                Math.abs(lastTransform.blur - newTransform.blur) > 0.1;
+                Math.abs(lastTransform.translateY - newTransform.translateY) > 0.01 ||
+                Math.abs(lastTransform.scale - newTransform.scale) > 0.0005 ||
+                Math.abs(lastTransform.rotation - newTransform.rotation) > 0.05 ||
+                Math.abs(lastTransform.blur - newTransform.blur) > 0.05;
 
             if (hasChanged) {
                 const transform = `translate3d(0, ${newTransform.translateY}px, 0) scale(${newTransform.scale}) rotate(${newTransform.rotation}deg)`;
@@ -228,18 +232,39 @@ const ScrollStack = ({
         measureInitialTops
     ]);
 
-    const handleScroll = useCallback(() => {
+    const scheduleUpdate = useCallback(() => {
         if (!isIntersectingRef.current) return;
-        updateCardTransforms();
+        if (rafIdRef.current !== null) return;
+        rafIdRef.current = requestAnimationFrame(() => {
+            rafIdRef.current = null;
+            updateCardTransforms();
+        });
     }, [updateCardTransforms]);
+
+    const handleScroll = useCallback(() => {
+        scheduleUpdate();
+    }, [scheduleUpdate]);
 
     const setupLenis = useCallback(() => {
         if (typeof window === 'undefined') return;
 
         if (useWindowScroll) {
-            // Global Lenis is handling the smooth scroll; just listen to scroll events
-            window.addEventListener('scroll', handleScroll);
-            return () => window.removeEventListener('scroll', handleScroll);
+            window.addEventListener('scroll', handleScroll, { passive: true });
+
+            const lenis = window.lenisInstance;
+            const onLenisScroll = () => {
+                scheduleUpdate();
+            };
+            if (lenis) {
+                lenis.on('scroll', onLenisScroll);
+            }
+
+            return () => {
+                window.removeEventListener('scroll', handleScroll);
+                if (lenis) {
+                    lenis.off('scroll', onLenisScroll);
+                }
+            };
         } else {
             const scroller = scrollerRef.current;
             if (!scroller || !(scroller.querySelector('.scroll-stack-inner') as HTMLElement)) return;
@@ -261,12 +286,8 @@ const ScrollStack = ({
 
             lenis.on('scroll', handleScroll);
 
-            // Only tick Lenis while the component is visible.
-            // Previously the RAF was unconditional — it kept running 60fps even
-            // when the Projects section was completely off-screen (e.g. user on HeroSection).
             const raf = (time: number) => {
                 if (!isIntersectingRef.current) {
-                    // Stop the loop — it will be restarted by the IntersectionObserver
                     animationFrameRef.current = null;
                     return;
                 }
@@ -327,6 +348,10 @@ const ScrollStack = ({
 
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
+            }
+            if (rafIdRef.current) {
+                cancelAnimationFrame(rafIdRef.current);
+                rafIdRef.current = null;
             }
             // If cleanupLenis is a function, call it (window scroll case)
             if (typeof cleanupLenis === 'function') {

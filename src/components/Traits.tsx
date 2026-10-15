@@ -84,7 +84,7 @@ const TraitsCard: React.FC = () => {
                 <div
                     key={index}
                     ref={(el) => { cardsRef.current[index] = el }}
-                    className="card-item"
+                    className="card-item cursor-target"
                     data-desc={trait.desc}
                     onMouseEnter={() => setHoveredIndex(index)}
                     onMouseLeave={() => setHoveredIndex(null)}
@@ -101,7 +101,15 @@ const TraitsCard: React.FC = () => {
                             pointerEvents: 'none'
                         }}>
                             {trait.imageUrl ? (
-                                <img src={trait.imageUrl} alt={typeof trait.title === 'string' ? trait.title : 'Trait icon'} className="w-full h-full object-contain" />
+                                <img
+                                    src={trait.imageUrl}
+                                    alt={typeof trait.title === 'string' ? trait.title : 'Trait icon'}
+                                    width={80}
+                                    height={80}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="w-full h-full object-contain"
+                                />
                             ) : (
                                 <DotLottieReact
                                     src={trait.lottieUrl}

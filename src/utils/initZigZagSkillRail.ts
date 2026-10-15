@@ -72,7 +72,7 @@ export function initZigZagSkillRail({
 
     window.addEventListener('resize', handleResize);
 
-    // --- SCROLLTRIGGER SETUP ---
+    // --- SCROLLTRIGGER & TIMELINE SETUP ---
     const numberOfCards = cards.length;
     // Pin length: Allow enough vertical scroll to comfortably pan through all cards.
     const totalPinnedHeight = window.innerHeight * numberOfCards;
@@ -83,18 +83,6 @@ export function initZigZagSkillRail({
         ease: 'power2.inOut'
     } : undefined;
 
-    const st = ScrollTrigger.create({
-        trigger: container,
-        start: 'top top',
-        end: `+=${totalPinnedHeight}`,
-        pin: true,
-        scrub: 1,
-        anticipatePin: 1,
-        snap: snapConfig,
-        invalidateOnRefresh: true,
-    });
-
-    // --- ANIMATION TIMELINES ---
     // Set initial position of the rail so Python card starts in the middle
     gsap.set(rail, { x: cachedXStart });
 
@@ -103,7 +91,10 @@ export function initZigZagSkillRail({
             trigger: container,
             start: 'top top',
             end: `+=${totalPinnedHeight}`,
+            pin: true,
             scrub: 1,
+            anticipatePin: 1,
+            snap: snapConfig,
             invalidateOnRefresh: true,
             onRefresh: () => {
                 // Sync cached positions whenever GSAP refreshes layout
@@ -159,7 +150,7 @@ export function initZigZagSkillRail({
     // Return Cleanup Function
     return () => {
         window.removeEventListener('resize', handleResize);
-        st.kill();
+        tl.scrollTrigger?.kill();
         tl.kill();
         // Reset transforms
         gsap.set(rail, { clearProps: 'all' });

@@ -30,9 +30,14 @@ const LazySection = ({
       }
     };
 
+    const handleLoadAll = () => {
+      setShouldRender(true);
+    };
+
     checkHash();
 
     window.addEventListener("hashchange", checkHash);
+    window.addEventListener("lazysection:loadall", handleLoadAll);
 
     // 2. Load via IntersectionObserver on scroll
     const observer = new IntersectionObserver(
@@ -57,6 +62,7 @@ const LazySection = ({
 
     return () => {
       window.removeEventListener("hashchange", checkHash);
+      window.removeEventListener("lazysection:loadall", handleLoadAll);
       observer.disconnect();
     };
   }, [id]);
