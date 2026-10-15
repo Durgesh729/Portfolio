@@ -101,6 +101,33 @@ export default function ScrollExpandMedia({ children }: { children: React.ReactN
 
     window.addEventListener('message', handleMessage);
 
+    // Proactively ping child iframe to trigger handshake in case child booted before listener
+    const pingInterval = setInterval(() => {
+      if (isCancelled || hasReceivedReadyRef.current) {
+        clearInterval(pingInterval);
+        return;
+      }
+      const iframeEl = iframeContainerRef.current?.querySelector('iframe');
+      if (iframeEl && iframeEl.contentWindow) {
+        try {
+          const targetOrigin = iframeEl.src ? new URL(iframeEl.src).origin : 'https://portfolio729.vercel.app';
+          if (isAllowedOrigin(targetOrigin)) {
+            iframeEl.contentWindow.postMessage(
+              {
+                source: 'durgesh-portfolio-entry',
+                version: 1,
+                type: 'PORTFOLIO_PING',
+                timestamp: Date.now(),
+              },
+              targetOrigin
+            );
+          }
+        } catch {
+          // ignore origin parsing error
+        }
+      }
+    }, 400);
+
     // Fallback: If no handshake within 8s, enable degraded entry truthfully
     const fallbackTimeout = setTimeout(() => {
       if (!isCancelled && !hasReceivedReadyRef.current) {
@@ -116,6 +143,7 @@ export default function ScrollExpandMedia({ children }: { children: React.ReactN
     return () => {
       isCancelled = true;
       window.removeEventListener('message', handleMessage);
+      clearInterval(pingInterval);
       clearTimeout(fallbackTimeout);
     };
   }, []);
@@ -268,11 +296,10 @@ export default function ScrollExpandMedia({ children }: { children: React.ReactN
       */}
       <div
         ref={iframeContainerRef}
-        className={`w-full h-full relative z-10 ${
-          phase === 'complete' ? 'fade-in-content' : 'pointer-events-none'
+        className={`w-full h-full relative z-10 transition-opacity duration-700 ${
+          phase === 'complete' ? 'fade-in-content opacity-100' : 'pointer-events-none opacity-0'
         }`}
         style={{
-          visibility: phase === 'complete' ? 'visible' : 'hidden',
           position: phase === 'complete' ? 'relative' : 'absolute',
           top: 0,
           left: 0,

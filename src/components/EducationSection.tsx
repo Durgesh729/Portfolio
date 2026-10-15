@@ -30,7 +30,7 @@ const EducationSection = () => {
   }, []);
 
   return (
-    <section id="education" className="pt-10 pb-24 relative overflow-hidden">
+    <section id="education" className="education-section-container pt-20 pb-24 relative overflow-x-clip">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/5 to-background" />
       <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />

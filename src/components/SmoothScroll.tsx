@@ -33,6 +33,13 @@ const SmoothScroll = ({ children }: SmoothScrollProps) => {
         lenisRef.current = lenis;
         window.lenisInstance = lenis;
 
+        // Prevent browser from restoring scroll position on reload
+        if ('scrollRestoration' in window.history) {
+            window.history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+        lenis.scrollTo(0, { immediate: true });
+
         // Keep ScrollTrigger updated with Lenis
         lenis.on('scroll', ScrollTrigger.update);
 

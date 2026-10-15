@@ -3,6 +3,12 @@ import App from "./App.tsx";
 import "./index.css";
 import gsap from "gsap";
 
+if (typeof window !== "undefined") {
+  if ("scrollRestoration" in window.history) {
+    window.history.scrollRestoration = "manual";
+  }
+}
+
 interface GSAPAuditEntry {
   type: 'Tween' | 'Timeline';
   targets: string[];

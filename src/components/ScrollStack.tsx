@@ -24,6 +24,8 @@ interface ScrollStackProps {
     rotationAmount?: number;
     blurAmount?: number;
     useWindowScroll?: boolean;
+    dwellDistance?: number;
+    endSpacerHeight?: string | number;
     onStackComplete?: () => void;
 }
 
@@ -40,6 +42,8 @@ const ScrollStack = ({
     rotationAmount = 0,
     blurAmount = 0,
     useWindowScroll = false,
+    dwellDistance,
+    endSpacerHeight,
     onStackComplete
 }: ScrollStackProps) => {
     const scrollerRef = useRef<HTMLDivElement>(null);
@@ -136,6 +140,13 @@ const ScrollStack = ({
         const scaleEndPositionPx = parsePercentage(scaleEndPosition, containerHeight);
 
         const endElementTop = initialEndTopRef.current;
+        const lastCardIndex = cardsRef.current.length - 1;
+        const lastCardTop = initialTopsRef.current[lastCardIndex] ?? 0;
+        const lastCardPinStart = lastCardTop - stackPositionPx - itemStackDistance * Math.max(0, lastCardIndex);
+        const effectiveDwell = dwellDistance ?? Math.min(Math.max(containerHeight * 0.45, 360), 480);
+        const pinEnd = useWindowScroll
+            ? (lastCardPinStart + effectiveDwell)
+            : (endElementTop - containerHeight / 2);
 
         cardsRef.current.forEach((card, i) => {
             if (!card) return;
@@ -143,7 +154,6 @@ const ScrollStack = ({
             const cardTop = initialTopsRef.current[i];
             if (cardTop === undefined) return;
 
-            const pinEnd = endElementTop - containerHeight / 2;
             const triggerStart = cardTop - stackPositionPx - itemStackDistance * i;
             const triggerEnd = cardTop - scaleEndPositionPx;
 
@@ -225,6 +235,8 @@ const ScrollStack = ({
         baseScale,
         rotationAmount,
         blurAmount,
+        useWindowScroll,
+        dwellDistance,
         onStackComplete,
         calculateProgress,
         parsePercentage,
@@ -418,11 +430,14 @@ const ScrollStack = ({
     }, [updateCardTransforms, useWindowScroll]);
 
     return (
-        <div className={`scroll-stack-scroller ${className}`.trim()} ref={scrollerRef}>
+        <div className={`scroll-stack-scroller ${useWindowScroll ? 'window-scroll' : ''} ${className}`.trim()} ref={scrollerRef}>
             <div className="scroll-stack-inner">
                 {children}
-                {/* Spacer so the last pin can release cleanly */}
-                <div className="scroll-stack-end" />
+                {/* Spacer so the last pin can release cleanly without overlapping following sections */}
+                <div
+                    className="scroll-stack-end"
+                    style={endSpacerHeight ? { height: typeof endSpacerHeight === 'number' ? `${endSpacerHeight}px` : endSpacerHeight } : undefined}
+                />
             </div>
         </div>
     );

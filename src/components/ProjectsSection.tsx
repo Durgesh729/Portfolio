@@ -178,7 +178,7 @@ const ProjectsSection = () => {
   };
 
   return (
-    <section id="projects" className="pt-24 pb-10 relative overflow-hidden bg-background">
+    <section id="projects" className="projects-section-container pt-24 pb-16 relative overflow-x-clip bg-background">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-card/20 to-background" />
 
@@ -204,9 +204,10 @@ const ProjectsSection = () => {
         {/* Scroll Stack Projects */}
         <ScrollStack
           itemDistance={50}
-          itemStackDistance={30}
+          itemStackDistance={26}
           itemScale={0.03}
-          stackPosition="20%"
+          stackPosition="10%"
+          dwellDistance={420}
           useWindowScroll={true} // Enable window scrolling
         >
           {projects.map((project, index) => {
@@ -261,8 +262,7 @@ const ProjectsSection = () => {
                               color="#2b2b30"
                               paperColor="#ffffff"
                               tabPosition="right"
-                              openOn="click"
-                              open={false}
+                              openOn="hover"
                               onOpenChange={(nextOpen) => {
                                 if (nextOpen) setActiveFolderModal(folderModalKey);
                               }}

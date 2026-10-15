@@ -14,7 +14,7 @@ export type ReadinessStage =
 export interface PortfolioReadinessMessage {
   source: 'durgesh-portfolio-vite';
   version: 1;
-  type: 'PORTFOLIO_PROGRESS' | 'PORTFOLIO_READY' | 'PORTFOLIO_ERROR';
+  type: 'PORTFOLIO_PROGRESS' | 'PORTFOLIO_READY' | 'PORTFOLIO_ERROR' | 'PORTFOLIO_PONG';
   payload: {
     stage: ReadinessStage;
     progress: number; // 0 to 100
@@ -22,6 +22,13 @@ export interface PortfolioReadinessMessage {
     error?: string;
     timestamp: number;
   };
+}
+
+export interface PortfolioPingMessage {
+  source: 'durgesh-portfolio-entry';
+  version: 1;
+  type: 'PORTFOLIO_PING';
+  timestamp: number;
 }
 
 export const ALLOWED_ORIGINS: readonly string[] = [

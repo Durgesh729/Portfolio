@@ -101,6 +101,37 @@ export default function LaptopIntro({ children }: LaptopIntroProps) {
     []
   );
 
+  // ─── Reset Scroll & Prevent Browser Auto-Scroll Restoration on Reload ──────
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
+    if (window.location.hash) {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+
+    const resetScroll = () => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      if (window.lenisInstance) {
+        window.lenisInstance.scrollTo(0, { immediate: true });
+      }
+    };
+
+    resetScroll();
+    const rafId = requestAnimationFrame(resetScroll);
+    const timeoutId = setTimeout(resetScroll, 120);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
   // ─── Responsive Scale Calculation ───────────────────────────────────────────
   useEffect(() => {
     const handleResize = () => {
@@ -160,7 +191,7 @@ export default function LaptopIntro({ children }: LaptopIntroProps) {
       sendReadinessMessage("hero_frame", 75, "Hero sequence frame 0 ready");
 
       // Stage 4: Critical layout stabilization (90%)
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         if (isCancelled || hasNotifiedReadyRef.current) return;
         setProgress((prev) => Math.max(prev, 90));
         setStatusText("LAYOUT STABILIZED");
@@ -176,9 +207,23 @@ export default function LaptopIntro({ children }: LaptopIntroProps) {
           setStatusText("SYSTEM READY - ALL SUBSYSTEMS NOMINAL");
           setCommandLog("status: ready for portfolio launch");
           sendReadinessMessage("ready", 100, "All systems nominal");
-        }, 150);
-      });
+        }, 120);
+      }, 50);
     };
+
+    // Listen for parent ping to immediately resend current state
+    const handleParentPing = (event: MessageEvent) => {
+      if (!isAllowedOrigin(event.origin)) return;
+      const data = event.data;
+      if (data && data.source === "durgesh-portfolio-entry" && data.type === "PORTFOLIO_PING") {
+        if (hasNotifiedReadyRef.current) {
+          sendReadinessMessage("ready", 100, "All systems nominal");
+        } else {
+          sendReadinessMessage("init", 50, "Child initializing");
+        }
+      }
+    };
+    window.addEventListener("message", handleParentPing);
 
     if (typeof window !== "undefined" && (window as unknown as { __HERO_INITIAL_FRAME_READY__?: boolean }).__HERO_INITIAL_FRAME_READY__) {
       handleHeroReady();
@@ -203,12 +248,21 @@ export default function LaptopIntro({ children }: LaptopIntroProps) {
     return () => {
       isCancelled = true;
       window.removeEventListener("hero:initial-ready", handleHeroReady);
+      window.removeEventListener("message", handleParentPing);
       clearTimeout(degradedTimer);
     };
   }, [sendReadinessMessage]);
 
   const handleEnterExperience = () => {
     if (!isReady) return;
+
+    // Reset scroll to top before opening laptop
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    if (window.lenisInstance) {
+      window.lenisInstance.scrollTo(0, { immediate: true });
+    }
 
     // 1. Play intro audio on explicit user interaction
     try {
@@ -225,8 +279,19 @@ export default function LaptopIntro({ children }: LaptopIntroProps) {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setPhase("expand");
+      window.scrollTo(0, 0);
+      if (window.lenisInstance) {
+        window.lenisInstance.scrollTo(0, { immediate: true });
+      }
+
       setTimeout(() => {
         setPhase("complete");
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        if (window.lenisInstance) {
+          window.lenisInstance.scrollTo(0, { immediate: true });
+        }
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("resize"));
         }
@@ -237,6 +302,12 @@ export default function LaptopIntro({ children }: LaptopIntroProps) {
   const handleAnimationComplete = () => {
     if (phase === "expand") {
       setPhase("complete");
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      if (window.lenisInstance) {
+        window.lenisInstance.scrollTo(0, { immediate: true });
+      }
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("resize"));
       }

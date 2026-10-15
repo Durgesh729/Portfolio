@@ -1,15 +1,17 @@
 .scroll-stack-scroller {
     width: 100%;
+    position: relative;
+}
+
+.scroll-stack-scroller:not(.window-scroll) {
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
-    position: relative;
-    /* Hide scrollbar for cleaner look, usually assumed for such components */
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
 
-.scroll-stack-scroller::-webkit-scrollbar {
+.scroll-stack-scroller:not(.window-scroll)::-webkit-scrollbar {
     width: 0;
     height: 0;
 }
@@ -25,6 +27,7 @@
 }
 
 .scroll-stack-card {
+    width: 100%;
     will-change: transform, filter;
     transition: none !important;
     backface-visibility: hidden;
@@ -34,7 +37,8 @@
 
 .scroll-stack-end {
     width: 100%;
-    height: 20vh;
-    /* Spacer to allow full scroll of the last item */
+    height: 65vh;
+    min-height: 520px;
+    /* Spacer to allow full scroll of the stacked items without overlapping subsequent sections */
     pointer-events: none;
 }
