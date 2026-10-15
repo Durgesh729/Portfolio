@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#160a2d"/>
+      <stop offset="100%" stop-color="#06020e"/>
+    </linearGradient>
+    <filter id="purpleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <!-- Background with rounded corners -->
+  <rect x="8" y="8" width="240" height="240" rx="54" fill="url(#bgGrad)" stroke="#a855f7" stroke-width="6" />
+  
+  <!-- DP Monogram Text with purple glow and crisp white foreground -->
+  <text x="128" y="166" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="118" font-weight="800" text-anchor="middle" fill="#a855f7" filter="url(#purpleGlow)" opacity="0.8">DP</text>
+  <text x="128" y="166" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="118" font-weight="800" text-anchor="middle" fill="#ffffff">DP</text>
+</svg>

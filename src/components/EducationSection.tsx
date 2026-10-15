@@ -66,7 +66,7 @@ const EducationSection = () => {
             </div>
 
             {/* Degree Card (Reveal Animation) */}
-            <div ref={revealCardRef} className="reveal-card group relative border border-[#2862d6] hover:border-gray-700 transition-all duration-300 hover:-translate-y-2">
+            <div ref={revealCardRef} className="reveal-card cursor-target group relative border border-[#2862d6] hover:border-gray-700 transition-all duration-300 hover:-translate-y-2">
               {/* BACK FACE (Content) */}
               <div className="face back">
                 <div className="content">
@@ -93,7 +93,7 @@ const EducationSection = () => {
             </div>
 
             {/* HSC Card (Reveal Animation) */}
-            <div ref={hscCardRef} className="reveal-card group relative border border-[#2862d6] hover:border-gray-700 transition-all duration-300 hover:-translate-y-2">
+            <div ref={hscCardRef} className="reveal-card cursor-target group relative border border-[#2862d6] hover:border-gray-700 transition-all duration-300 hover:-translate-y-2">
               {/* BACK FACE (Content) */}
               <div className="face back">
                 <div className="content">
@@ -115,7 +115,7 @@ const EducationSection = () => {
             </div>
 
             {/* Currently Learning Card */}
-            <div className="group relative bg-[#0a0f14] border border-[#2862d6] rounded-2xl p-6 shadow-[0_0_30px_-5px_rgba(20,184,166,0.1)]">
+            <div className="currently-learning-card cursor-target group relative bg-[#0a0f14] border border-[#2862d6] rounded-2xl p-6 shadow-[0_0_30px_-5px_rgba(20,184,166,0.1)]">
               <div className="flex items-center gap-3 mb-4">
                 <Sparkles className="text-[#2862d6]" size={20} />
                 <h3 className="text-lg font-bold text-white">Currently Learning</h3>
@@ -123,9 +123,9 @@ const EducationSection = () => {
 
               <div className="learning-container flex flex-wrap gap-3">
                 <div className="card-learning-1 px-4 py-2 rounded-full bg-[#131b24] border border-[#2862d6] text-sm font-medium hover:bg-[#1a242f] transition-colors cursor-default relative overflow-hidden">
-                  <button className="button" data-text="Deep Learning">
-                    <span className="actual-text">Deep Learning</span>
-                    <span aria-hidden="true" className="hover-text">Deep Learning</span>
+                  <button className="button" data-text="NLP">
+                    <span className="actual-text">NLP</span>
+                    <span aria-hidden="true" className="hover-text">NLP</span>
                   </button>
                 </div>
                 <div className="card-learning-2 px-4 py-2 rounded-full bg-[#131b24] border border-[#2862d6] text-sm font-medium hover:bg-[#1a242f] transition-colors cursor-default relative overflow-hidden">
@@ -158,7 +158,11 @@ const EducationSection = () => {
                 <div className="absolute inset-0 z-0">
                   <img
                     src="/python-cert.webp"
-                    alt="Background"
+                    alt="Python for Data Science Certificate"
+                    width={550}
+                    height={380}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 </div>
@@ -178,7 +182,11 @@ const EducationSection = () => {
                 <div className="absolute inset-0 z-0">
                   <img
                     src="/gen-ai-cert.webp"
-                    alt="Background"
+                    alt="Generative AI Certificate"
+                    width={550}
+                    height={380}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 </div>
@@ -199,7 +207,11 @@ const EducationSection = () => {
                 <div className="absolute inset-0 z-0">
                   <img
                     src="/corizo-cert.webp"
-                    alt="Background"
+                    alt="Machine Learning Bootcamp Certificate"
+                    width={550}
+                    height={380}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 </div>
@@ -220,7 +232,11 @@ const EducationSection = () => {
                 <div className="absolute inset-0 z-0">
                   <img
                     src="/be10x-cert.webp"
-                    alt="Background"
+                    alt="AI Tools Workshop Certificate"
+                    width={550}
+                    height={380}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 </div>
@@ -241,7 +257,11 @@ const EducationSection = () => {
                 <div className="absolute inset-0 z-0">
                   <img
                     src="/teamwork-cert.webp"
-                    alt="Background"
+                    alt="Teamwork Foundations Certificate"
+                    width={550}
+                    height={380}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 </div>
@@ -262,7 +282,11 @@ const EducationSection = () => {
                 <div className="absolute inset-0 z-0">
                   <img
                     src="/nxtwave-cert.webp"
-                    alt="Background"
+                    alt="Generative AI Model Certificate"
+                    width={550}
+                    height={380}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 </div>

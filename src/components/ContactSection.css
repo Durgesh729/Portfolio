@@ -1,0 +1,201 @@
+/* Contact Section Styles */
+
+.contact-section-container {
+  position: relative;
+  width: 100%;
+  background: #0b0b12;
+}
+
+/* Fullscreen Memories Overlay (Slides in when user clicks 'My memories') */
+.memories-overlay-root {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  overflow: hidden;
+  background: radial-gradient(#5a47ce, #232323 80%);
+  cursor: default !important;
+}
+
+.memories-slider {
+  width: 100%;
+  height: 100%;
+  transform: translate3d(100vw, 0, 0);
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  cursor: default !important;
+}
+
+.memories-slider--visible {
+  transform: translate3d(0, 0, 0);
+}
+
+.memories-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  cursor: default !important;
+}
+
+/* Force normal system cursor when 3D book memories view is active */
+body.memories-view-active,
+body.memories-view-active * {
+  cursor: auto !important;
+}
+
+body.memories-view-active .memories-overlay-root,
+body.memories-view-active .memories-slider,
+body.memories-view-active .memories-iframe {
+  cursor: default !important;
+}
+
+body.memories-view-active .target-cursor-wrapper {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.contact-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  flex: 1;
+  box-sizing: border-box;
+  gap: clamp(2rem, 5vw, 5rem);
+  pointer-events: auto;
+}
+
+.contact-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  min-height: 100%;
+  flex: 1;
+  min-width: 0;
+  gap: clamp(1.2rem, 2.5vh, 2.8rem);
+}
+
+.contact-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  width: min(100%, 450px);
+  max-width: 450px;
+}
+
+@media (max-width: 1024px) {
+  .contact-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 2.5rem;
+    height: auto;
+    min-height: auto;
+    overflow-y: visible;
+  }
+
+  .contact-left {
+    height: auto;
+    min-height: auto;
+    width: 100%;
+    gap: 1.8rem;
+  }
+
+  .contact-right {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    justify-content: center;
+  }
+}
+
+/* 5s delayed reveal: smooth fade in & fade out animation */
+.memories-heading-wrap {
+  width: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px) scale(0.98);
+  transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1.4s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.memories-heading-wrap--visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* Memories button group: places the paper airplane icon right beside "My memories" */
+.memories-btn-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+  vertical-align: middle;
+}
+
+.svg-name-con {
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5em;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  user-select: none;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease;
+}
+
+.svg-name-con svg {
+  display: block;
+  width: clamp(30px, 2.5vw, 36px);
+  height: clamp(30px, 2.5vw, 36px);
+  transform-origin: center center;
+  transition: transform 0.3s ease-in-out, filter 0.3s ease;
+  filter: drop-shadow(0 0 6px rgba(124, 58, 237, 0.45));
+}
+
+/* Hover synchronization: hovering either triggers the plane's flight animation */
+.memories-btn-group:hover .svg-wrapper,
+.svg-name-con:hover .svg-wrapper,
+.svg-name-con.is-hovered .svg-wrapper {
+  animation: fly-1 0.6s ease-in-out infinite alternate;
+}
+
+/* Hover synchronization: rotate & scale with luminous accent */
+.memories-btn-group:hover .svg-name-con svg,
+.svg-name-con:hover svg,
+.svg-name-con.is-hovered svg {
+  transform: rotate(45deg) scale(1.1);
+  filter: drop-shadow(0 0 14px rgba(124, 58, 237, 0.9)) drop-shadow(0 0 6px rgba(6, 182, 212, 0.75));
+}
+
+.svg-name-con:active {
+  transform: scale(0.95);
+}
+
+@keyframes fly-1 {
+  from {
+    transform: translateY(0.1em);
+  }
+  to {
+    transform: translateY(-0.1em);
+  }
+}

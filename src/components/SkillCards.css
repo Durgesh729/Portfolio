@@ -72,100 +72,13 @@
     tabindex: 0;
 }
 
-/* Inner wrapper for Visuals & Hover Scale */
-.skill-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 8px;
-    background: #011522;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    overflow: hidden;
-    transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.2, 1),
-        box-shadow 0.4s cubic-bezier(0.2, 0.9, 0.2, 1);
+/* Hover scale on card */
+.skill-card:hover .border-glow-card {
+    transform: scale(1.02) translate3d(0, 0, 0.01px);
 }
 
-@media (max-width: 768px) {
-    .skill-card-inner {
-        border-radius: 8px;
-    }
-}
-
-/* macOS Top Toolbar style */
-.card-toolbar {
-    display: flex;
-    gap: 6px;
-    padding: 14px 16px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 3;
-}
-
-.toolbar-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-}
-
-.dot-red {
-    background-color: #ff605c;
-}
-
-.dot-yellow {
-    background-color: #ffbd44;
-}
-
-.dot-green {
-    background-color: #00ca4e;
-}
-
-/* Gradient overlay for depth */
-.skill-card-inner::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg,
-            rgba(0, 255, 136, 0.03) 0%,
-            transparent 50%,
-            rgba(0, 217, 255, 0.03) 100%);
-    pointer-events: none;
-    z-index: 1;
-}
-
-/* Neon glow effect */
-.skill-card-inner::after {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #ea00ff, #00d9ff);
-    opacity: 0;
-    z-index: -1;
-    transition: opacity 0.3s ease;
-    filter: blur(12px);
-}
-
-.skill-card:hover .skill-card-inner::after,
-.skill-card:focus .skill-card-inner::after {
-    opacity: 0.6;
-}
-
-.skill-card:hover .skill-card-inner {
-    box-shadow:
-        0 16px 48px rgba(0, 0, 0, 0.6),
-        0 0 80px rgba(0, 255, 136, 0.2);
-    transform: scale(1.02);
-}
-
-.skill-card:focus .skill-card-inner {
-    outline: 2px solid #00ff88;
+.skill-card:focus-visible .border-glow-card {
+    outline: 2px solid hsl(var(--primary));
     outline-offset: 4px;
 }
 
@@ -177,6 +90,8 @@
     transform: translate(-50%, -50%);
     width: 60%;
     height: 60%;
+    aspect-ratio: 1 / 1;
+    contain: strict;
     object-fit: contain;
     opacity: 0.15;
     z-index: 0;
@@ -194,7 +109,7 @@
     justify-content: flex-end;
     padding: 1.5rem;
     background: linear-gradient(to top,
-            rgba(0, 0, 0, 0.8) 0%,
+            rgba(0, 0, 0, 0.45) 0%,
             transparent 60%);
 }
 
@@ -223,85 +138,8 @@
     max-width: 100%;
 }
 
-/* Cyberpunk progress bar */
-.progress-bar-wrapper {
-    position: relative;
-    background: linear-gradient(45deg, #1a1a1a, #3d003d);
-    border: 2px solid #660066;
-    width: 100%;
-    max-width: 320px;
-    height: 34px;
-    transform: skew(20deg);
-    box-shadow:
-        0 0 20px rgba(179, 0, 255, 0.4),
-        0 0 50px rgba(179, 0, 255, 0.2),
-        inset 0 0 10px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
-    margin-top: 1rem;
-}
-
-.progress-bar-fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 100%;
-    background: linear-gradient(90deg, #d400ff, #8000ff);
-    z-index: 0;
-    animation: progressLoad 1.2s cubic-bezier(0.65, 0, 0.35, 1) forwards;
-    box-shadow:
-        0 0 15px #d400ff,
-        0 0 25px #8000ff,
-        inset 0 0 10px rgba(255, 255, 255, 0.2);
-}
-
-.progress-bar-text {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) skewX(-20deg);
-    z-index: 1;
-    color: #fff;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-shadow:
-        0 0 5px #fff,
-        0 0 10px #d400ff,
-        0 0 20px #d400ff;
-    letter-spacing: 1px;
-}
-
-.progress-label {
-    position: absolute;
-    top: -32px;
-    left: 50%;
-    transform: translateX(-50%) skew(-20deg);
-    color: #e0e0e0;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: 600;
-    text-shadow:
-        0 0 10px #8000ff,
-        0 0 20px #8000ff;
-}
-
-@keyframes progressLoad {
-    from {
-        width: 0%;
-    }
-
-    to {
-        width: var(--progress-width);
-    }
-}
-
-/* Progress label text */
-.progress-label-text {
-    font-size: 0.95rem;
-    margin-bottom: 0.6rem;
-    color: #c5c6c7;
-    letter-spacing: 3px;
+.card-title:last-child {
+    margin-bottom: 0;
 }
 
 /* Reduced motion fallback */
@@ -350,10 +188,5 @@
 
     .card-title {
         font-size: 1.8rem;
-    }
-
-    .progress-bar-wrapper {
-        max-width: 250px;
-        height: 32px;
     }
 }

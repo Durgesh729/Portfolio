@@ -5,7 +5,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "entry", "**/node_modules", "**/.next"] },
+  { ignores: ["dist", "entry", "**/node_modules", "**/.next", ".kilo", "certificate cardswap", "Contact section", "electric logo", "target cursor"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

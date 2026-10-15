@@ -1,0 +1,343 @@
+/* ================= 3D LAPTOP INTRO & ANIMATIONS ================= */
+
+.laptop {
+  transform-origin: 50% 159px;
+  will-change: transform;
+}
+
+.screen {
+  border-radius: 20px;
+  box-shadow: inset 0 0 0 2px #c8cacb, inset 0 0 0 10px #000;
+  height: 318px;
+  width: 518px;
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: linear-gradient(
+    15deg,
+    #000000ff 0%,
+    #000000ff 13%,
+    #000000ff 25%,
+    #000000ff 38%,
+    #000000ff 50%,
+    #000000ff 62%,
+    #000000ff 75%,
+    #000000ff 87%,
+    #000000ff 100%
+  );
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+  animation: laptopOpen 4s ease-out forwards;
+  overflow: hidden;
+  backface-visibility: hidden;
+  transition: border-radius 1.5s cubic-bezier(0.6, 0.05, -0.01, 0.9),
+              box-shadow 1.5s cubic-bezier(0.6, 0.05, -0.01, 0.9);
+}
+
+.screen.expanding {
+  transform-style: preserve-3d;
+  border-radius: 0px;
+  box-shadow: inset 0 0 0 0px #c8cacb, inset 0 0 0 0px #000;
+}
+
+@keyframes laptopOpen {
+  from {
+    transform: perspective(1900px) rotateX(-88.5deg);
+  }
+  to {
+    transform: perspective(1000px) rotateX(0deg);
+  }
+}
+
+/* ================= TERMINAL LOADER ================= */
+.terminal-loader {
+  border: 0.1em solid #333;
+  background-color: #1a1a1a;
+  color: #0f0;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1em;
+  padding: 1.5em 1em;
+  width: 25em;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  position: absolute;
+  z-index: 10;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+
+.screen.expanding .terminal-loader {
+  opacity: 0;
+}
+
+.terminal-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1.5em;
+  background-color: #333;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  padding: 0 0.4em;
+  box-sizing: border-box;
+}
+
+.terminal-controls {
+  float: right;
+}
+
+.terminal-control {
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  margin-left: 0.4em;
+  border-radius: 50%;
+  background-color: #777;
+}
+
+.terminal-control.close {
+  background-color: #e33;
+}
+
+.terminal-control.minimize {
+  background-color: #ee0;
+}
+
+.terminal-control.maximize {
+  background-color: #0b0;
+}
+
+.terminal-title {
+  float: left;
+  line-height: 1.5em;
+  color: #eee;
+  font-size: 0.85em;
+}
+
+.terminal-text {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 0.2em solid green;
+  animation:
+    terminalTypeAndDelete 4s steps(20) infinite,
+    terminalBlinkCursor 0.5s step-end infinite alternate;
+  margin-top: 1.5em;
+  color: #0f0;
+  font-size: 0.9em;
+}
+
+@keyframes terminalBlinkCursor {
+  50% {
+    border-right-color: transparent;
+  }
+}
+
+@keyframes terminalTypeAndDelete {
+  0%,
+  5% {
+    width: 0;
+  }
+  45%,
+  70% {
+    width: 34ch;
+  }
+  90%,
+  100% {
+    width: 0;
+  }
+}
+
+/* ================= HEADER (camera notch) ================= */
+.laptop-header {
+  width: 100px;
+  height: 12px;
+  position: absolute;
+  background-color: #000;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 0 0 6px 6px;
+  transition: opacity 0.8s;
+  z-index: 20;
+}
+
+.screen.expanding .laptop-header {
+  opacity: 0;
+}
+
+/* ================= KEYBOARD ================= */
+.keyboard {
+  background: radial-gradient(circle at center, #e2e3e4 85%, #a9abac 100%);
+  border: solid #a0a3a7;
+  border-radius: 2px 2px 12px 12px;
+  border-width: 1px 2px 0 2px;
+  box-shadow: inset 0 -2px 8px 0 #6c7074;
+  height: 24px;
+  margin-top: -10px;
+  width: 620px;
+  transition: opacity 0.5s;
+}
+
+.laptop.expanding .keyboard {
+  opacity: 0;
+}
+
+@keyframes fadeInIntro {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in-content {
+  animation: fadeInIntro 0.5s ease-out forwards;
+}
+
+/* ================= 100-PIXEL PROGRESS GRID & TERMINAL LOADER ================= */
+
+.progress-container {
+  width: 90%;
+  max-width: 400px;
+  margin: 16px auto;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: transparent;
+  position: relative;
+}
+
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(25, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 4px;
+  perspective: 1200px;
+}
+
+.pixel {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  border-radius: 50%;
+  transform-style: preserve-3d;
+  transform-origin: center;
+  background: #111;
+  box-shadow:
+    0 0 2px rgba(255, 255, 255, 0.2),
+    0 0 5px rgba(255, 255, 255, 0.1);
+  transform: rotateY(180deg) scale(0.8);
+  opacity: 0.15;
+  will-change: transform, opacity;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+              background 0.4s ease,
+              opacity 0.3s ease;
+}
+
+.pixel.active {
+  opacity: 1;
+  transform: rotateY(0deg) scale(1.15);
+  background: #ffffff;
+  box-shadow:
+    0 0 8px #ffffff,
+    0 0 16px #ffffff,
+    0 0 28px rgba(255, 255, 255, 0.8);
+}
+
+.pixel.resting {
+  opacity: 0.2;
+  transform: rotateY(180deg) scale(0.8);
+  background: #111;
+  box-shadow:
+    0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+.pixel::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  transform: translate(-50%, -50%) rotate(45deg);
+  mix-blend-mode: color-dodge;
+  opacity: 0;
+  transition: opacity 0.6s ease-in;
+}
+
+.pixel.active:hover::after,
+.pixel.active:hover {
+  opacity: 1;
+}
+
+@keyframes fill-animation {
+  0%, 1% {
+    opacity: 0;
+    transform: rotateY(180deg) scale(0.8);
+    background: #111;
+    box-shadow:
+      0 0 2px #000,
+      0 0 5px #000,
+      0 0 10px #000;
+  }
+  10% {
+    opacity: 1;
+    transform: rotateY(90deg) scale(1);
+    background: #ffffff;
+    box-shadow:
+      0 0 5px #ffffff,
+      0 0 15px #ffffff,
+      0 0 30px #ffffff;
+  }
+  50%, 100% {
+    transform: rotateY(0deg) scale(1.2);
+    background: #ffffff;
+    box-shadow:
+      0 0 12px #ffffff,
+      0 0 24px #ffffff,
+      0 0 40px #ffffff;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .progress-grid {
+    gap: 3px;
+  }
+
+  .pixel.active {
+    transform: rotateY(0deg) scale(1.1);
+    box-shadow: 0 0 8px #ffffff, 0 0 14px rgba(255, 255, 255, 0.6);
+  }
+}
+
+@media screen and (max-width: 468px) {
+  .progress-container {
+    width: 85%;
+    margin: 12px auto;
+    padding: 8px 12px;
+  }
+  .progress-grid {
+    gap: 2.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
+

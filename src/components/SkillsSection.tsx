@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import DecryptedText from "./DecryptedText";
 import { initZigZagSkillRail } from "../utils/initZigZagSkillRail";
+import BorderGlow from "./BorderGlow";
 import "./SkillCards.css";
 
 interface Skill {
@@ -49,17 +50,17 @@ const skills: Skill[] = [
     description: ""
   },
   {
+    name: "Scikit Learn",
+    level: 85,
+    category: "AI / ML Technologies",
+    logo: "/images/skills/scikit-learn-logo.png",
+    description: ""
+  },
+  {
     name: "GitHub",
     level: 85,
     category: "Tools & Platforms",
     logo: "/images/skills/github_logo.png",
-    description: ""
-  },
-  {
-    name: "FastAPI",
-    level: 90,
-    category: "Tools & Platforms",
-    logo: "/images/skills/fastapi_logo.png",
     description: ""
   },
   {
@@ -133,42 +134,40 @@ const SkillsSection = () => {
               tabIndex={0}
               data-index={index}
               data-skill={skill.name.toLowerCase().replace(/\s+/g, '-')}
-              aria-label={`${skill.name}: ${skill.level}% proficiency`}
+              aria-label={skill.name}
             >
-              <div className="skill-card-inner">
-                {/* macOS Top Toolbar */}
-                <div className="card-toolbar">
-                  <span className="toolbar-dot dot-red" />
-                  <span className="toolbar-dot dot-yellow" />
-                  <span className="toolbar-dot dot-green" />
-                </div>
-
-                {/* Background Logo */}
+              <BorderGlow
+                edgeSensitivity={30}
+                glowColor="40 80 80"
+                backgroundColor="hsl(var(--card) / 0.6)"
+                borderRadius={28}
+                glowRadius={40}
+                glowIntensity={1}
+                coneSpread={25}
+                animated={false}
+                colors={['#c084fc', '#f472b6', '#38bdf8']}
+                className="w-full h-full"
+              >
                 <img
                   src={skill.logo}
                   alt=""
+                  width={180}
+                  height={180}
                   className="card-bg-logo"
                   loading="lazy"
+                  decoding="async"
+                  aria-hidden="true"
                 />
 
                 {/* Card Content */}
                 <div className="card-content">
                   <div className="card-category">{skill.category}</div>
                   <h3 className="card-title">{skill.name}</h3>
-                  <p className="card-description">{skill.description}</p>
-
-                  {/* Progress Bar */}
-                  <p className="progress-label-text">ℙ𝕣𝕠𝕘𝕣𝕖𝕤𝕤</p>
-                  <div className="progress-bar-wrapper">
-                    <div
-                      className="progress-bar-fill"
-                      style={{ '--progress-width': `${skill.level}%` } as React.CSSProperties}
-                    />
-                    <div className="progress-bar-text">{skill.level}%</div>
-                    <div className="progress-label">Proficiency</div>
-                  </div>
+                  {skill.description ? (
+                    <p className="card-description">{skill.description}</p>
+                  ) : null}
                 </div>
-              </div>
+              </BorderGlow>
             </article>
           ))}
         </div>

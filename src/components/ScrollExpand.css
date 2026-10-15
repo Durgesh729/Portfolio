@@ -1,0 +1,239 @@
+.scroll-expand {
+  position: relative;
+  width: 100%;
+}
+
+.scroll-expand--scroller {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior: contain;
+}
+
+.scroll-expand--scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-expand--window {
+  height: auto;
+}
+
+.scroll-expand__track {
+  position: relative;
+  width: 100%;
+}
+
+.scroll-expand__stage {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  overflow: hidden;
+  --se-title-size: 4rem;
+}
+
+.scroll-expand__frame {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(31% 37% 31% 37% round 24px);
+  will-change: clip-path;
+}
+
+.scroll-expand__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  will-change: transform;
+  transform-origin: center;
+  user-select: none;
+  -webkit-user-drag: none;
+  --background: #0b0b12;
+  --primary: #7c3aed;
+  --secondary: #06b6d4;
+  background:
+    linear-gradient(
+      to bottom,
+      var(--background) 0%,
+      color-mix(in srgb, var(--primary) 5%, var(--background)) 50%,
+      var(--background) 100%
+    );
+}
+
+.scroll-expand__media::before,
+.scroll-expand__media::after {
+  content: "";
+  position: absolute;
+  width: 24rem;
+  height: 24rem;
+  border-radius: 9999px;
+  filter: blur(64px);
+  pointer-events: none;
+}
+
+.scroll-expand__media::before {
+  top: 25%;
+  right: 0;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  transform: translate(40%, -40%);
+}
+
+.scroll-expand__media::after {
+  bottom: 25%;
+  left: 0;
+  background: color-mix(in srgb, var(--secondary) 10%, transparent);
+  transform: translate(-40%, 40%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .scroll-expand__media {
+    --background: #080810;
+    --primary: #c084fc;
+    --secondary: #22d3ee;
+  }
+}
+
+.scroll-expand__scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.1) 45%, rgba(0, 0, 0, 0.35));
+  opacity: 0;
+}
+
+.scroll-expand__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6%;
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+.scroll-expand__title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 6%;
+  text-align: center;
+  font-size: var(--se-title-size);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  will-change: opacity, transform;
+  white-space: nowrap;
+}
+
+.scroll-expand__post-title {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: clamp(2rem, 5vh, 4rem) clamp(1.5rem, 6vw, 5.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 0;
+  text-align: left;
+  color: #fff;
+  pointer-events: none;
+  will-change: opacity, transform;
+  opacity: 0;
+  transform-origin: top left;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.scroll-expand__post-title::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Typography: matched to reference image ---------- */
+.contact-copy {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.contact-copy__line {
+  margin: 0;
+  padding: 0;
+  line-height: 1.05;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .contact-copy__line {
+    white-space: normal;
+  }
+}
+
+/* Base sizing and crisp rendering for all headline text */
+.contact-copy__sans,
+.contact-copy__italic {
+  font-size: clamp(2.25rem, 5vw, 6rem);
+  color: #ffffff;
+  display: inline;
+  vertical-align: baseline;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Line 1: Modern clean grotesque sans-serif (medium weight, tight tracking) */
+.contact-copy__sans {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+
+/* Line 2 "about": Bold punchy grotesque sans-serif */
+.contact-copy__sans--bold,
+.contact-copy__line:nth-child(2) .contact-copy__sans {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+/* Line 2 & 3: High-contrast editorial serif italic */
+.contact-copy__italic {
+  font-family: 'Playfair Display', Georgia, 'Cormorant Garamond', 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.scroll-expand__hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.25rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+  will-change: opacity, transform;
+}

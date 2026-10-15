@@ -1,8 +1,26 @@
+import { useState, useEffect } from "react";
 import PillNav from "./PillNav/PillNav";
 
-
-
 const Navbar = () => {
+  const [isMemoriesOpen, setIsMemoriesOpen] = useState(false);
+
+  useEffect(() => {
+    const checkMemories = () => {
+      setIsMemoriesOpen(document.body.classList.contains("memories-view-active"));
+    };
+
+    checkMemories();
+
+    const observer = new MutationObserver(checkMemories);
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+    return () => observer.disconnect();
+  }, []);
+
+  if (isMemoriesOpen) {
+    return null;
+  }
+
   const items = [
     { label: "Home", href: "#home" },
     { label: "About", href: "#about" },
@@ -20,7 +38,7 @@ const Navbar = () => {
       pillColor="hsl(var(--muted))"
       pillTextColor="hsl(var(--foreground))"
       hoveredPillTextColor="hsl(var(--primary))"
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 shadow-lg"
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-50"
     />
   );
 };
