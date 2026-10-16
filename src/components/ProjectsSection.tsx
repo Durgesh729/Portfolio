@@ -250,7 +250,7 @@ const ProjectsSection = () => {
                         {/* Left Side: Folder Animation (No gray container box) */}
                         <div className="lg:col-span-5 flex items-center justify-center">
                           <div
-                            className="w-full h-full min-h-[360px] sm:min-h-[420px] lg:min-h-[480px] flex items-center justify-center cursor-pointer relative"
+                            className="w-full h-full min-h-[360px] sm:min-h-[420px] lg:min-h-[480px] flex items-center justify-center cursor-pointer relative group/folder transition-transform duration-300 hover:scale-[1.02]"
                             onClick={() => setActiveFolderModal(folderModalKey)}
                             title="Click to open folder in front"
                           >
@@ -259,10 +259,10 @@ const ProjectsSection = () => {
                               mode="book"
                               variant="glass"
                               layout="spread"
-                              color="#2b2b30"
                               paperColor="#ffffff"
                               tabPosition="right"
-                              openOn="hover"
+                              openOn="click"
+                              open={false}
                               onOpenChange={(nextOpen) => {
                                 if (nextOpen) setActiveFolderModal(folderModalKey);
                               }}
@@ -406,7 +406,6 @@ const ProjectsSection = () => {
                 mode="book"
                 variant="glass"
                 layout="spread"
-                color="#2b2b30"
                 paperColor="#ffffff"
                 tabPosition="right"
                 openOn="click"

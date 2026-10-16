@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
+import ScrollTrigger from 'gsap/ScrollTrigger';
 import ElectricLogo from '../ElectricLogo';
 import './PillNav.css';
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface NavItem {
     label: string;
@@ -218,9 +221,6 @@ const PillNav = ({
             e.preventDefault();
             const targetId = href.slice(1);
 
-            // Signal any lazy sections to load their content immediately
-            window.dispatchEvent(new CustomEvent('lazysection:loadall'));
-
             if (targetId === 'home') {
                 if (window.lenisInstance) {
                     window.lenisInstance.start();
@@ -232,25 +232,21 @@ const PillNav = ({
                 return;
             }
 
+            // Ensure ScrollTrigger pin positions and spacer measurements are exact
+            ScrollTrigger.refresh();
+
             const targetEl = document.getElementById(targetId);
             if (targetEl) {
                 const extraOffset = targetId === 'contact' ? window.innerHeight * 0.9 : 0;
+                const rect = targetEl.getBoundingClientRect();
+                const targetY = rect.top + window.scrollY + extraOffset;
 
-                const scrollToElement = () => {
-                    const rect = targetEl.getBoundingClientRect();
-                    const targetY = rect.top + window.scrollY + extraOffset;
-
-                    if (window.lenisInstance) {
-                        window.lenisInstance.start();
-                        window.lenisInstance.scrollTo(targetY, { duration: 1.2 });
-                    } else {
-                        window.scrollTo({ top: targetY, behavior: 'smooth' });
-                    }
-                };
-
-                scrollToElement();
-                // Re-evaluate in case any lazy loaded section dynamically expanded the layout
-                setTimeout(scrollToElement, 60);
+                if (window.lenisInstance) {
+                    window.lenisInstance.start();
+                    window.lenisInstance.scrollTo(targetY, { duration: 1.2 });
+                } else {
+                    window.scrollTo({ top: targetY, behavior: 'smooth' });
+                }
 
                 window.history.pushState(null, '', href);
             }

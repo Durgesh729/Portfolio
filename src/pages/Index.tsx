@@ -1,7 +1,10 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import LazySection from "@/components/ui/LazySection";
 import AboutSection from "@/components/AboutSection";
+import SkillsSection from "@/components/SkillsSection";
+import ProjectsSection from "@/components/ProjectsSection";
+import EducationSection from "@/components/EducationSection";
+import ContactSection from "@/components/ContactSection";
 import LaptopIntro from "@/components/LaptopIntro";
 
 const Index = () => {
@@ -23,27 +26,10 @@ const Index = () => {
           </div>
           <div className="relative z-10 bg-background" id="portfolio-content">
             <AboutSection />
-            <LazySection
-              id="skills"
-              importFunc={() => import("@/components/SkillsSection")}
-              minHeight="600px"
-            />
-            <LazySection
-              id="projects"
-              importFunc={() => import("@/components/ProjectsSection")}
-              minHeight="700px"
-            />
-            <LazySection
-              id="education"
-              importFunc={() => import("@/components/EducationSection")}
-              minHeight="500px"
-            />
-            <LazySection
-              id="contact"
-              importFunc={() => import("@/components/ContactSection")}
-              minHeight="600px"
-            />
-
+            <SkillsSection />
+            <ProjectsSection />
+            <EducationSection />
+            <ContactSection />
           </div>
         </main>
       </div>

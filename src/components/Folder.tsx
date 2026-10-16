@@ -1087,7 +1087,7 @@ const Folder = ({
   label,
   mode = 'flap',
   variant = 'solid',
-  color = '#3d8bff',
+  color,
   paperColor = '#ffffff',
   tabPosition = 'right',
   layout = 'spread',
@@ -1218,7 +1218,8 @@ const Folder = ({
   const setOpenRef = useRef(setOpen);
   setOpenRef.current = setOpen;
 
-  const rgb = parseColor(color);
+  const resolvedColor = color ?? (glass ? 'rgba(255, 255, 255, 0.15)' : '#3d8bff');
+  const rgb = parseColor(resolvedColor);
   const paper = parseColor(paperColor);
   const backTone = mixRgb(rgb, [0, 0, 0], 0.16);
   const insideTop = rgbString(mixRgb(rgb, [0, 0, 0], 0.08));

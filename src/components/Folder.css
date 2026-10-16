@@ -243,24 +243,46 @@
 }
 
 .folder-root[data-variant='glass'] .folder-back-fill {
-  background: linear-gradient(180deg, var(--folder-inside-top), var(--folder-inside-bottom));
+  background: linear-gradient(175deg, rgba(30, 32, 40, 0.88) 0%, rgba(16, 17, 22, 0.96) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.folder-root[data-variant='glass'] .folder-face {
+  visibility: visible !important;
+}
+
+.folder-root[data-variant='glass'] .folder-glass {
+  display: none !important;
 }
 
 .folder-root[data-variant='glass'] .folder-face-outer,
 .folder-root[data-variant='glass'] .folder-face-inner {
   background:
     linear-gradient(
-      160deg,
-      rgba(255, 255, 255, 0.34) 0%,
-      rgba(255, 255, 255, 0.08) 46%,
-      rgba(255, 255, 255, 0.16) 100%
+      135deg,
+      rgba(255, 255, 255, 0.25) 0%,
+      rgba(255, 255, 255, 0.05) 45%,
+      rgba(255, 255, 255, 0.15) 100%
     ),
-    rgba(var(--folder-rgb), 0.24);
+    rgba(255, 255, 255, 0.04);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  -webkit-backdrop-filter: blur(var(--folder-frost)) saturate(1.8);
-  backdrop-filter: blur(var(--folder-frost)) saturate(1.8);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 0.6),
+    0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(var(--folder-frost, 10px)) saturate(1.8) contrast(1.05);
+  backdrop-filter: blur(var(--folder-frost, 10px)) saturate(1.8) contrast(1.05);
+}
+
+.folder-root[data-variant='glass'] .folder-face::after {
+  background: linear-gradient(
+    rgba(255, 255, 255, var(--folder-glint, 0)),
+    rgba(255, 255, 255, var(--folder-glint, 0))
+  );
+}
+
+.folder-root[data-variant='glass'] .folder-tab-text {
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
 }
 
 .folder-root[data-gl] .folder-face {
