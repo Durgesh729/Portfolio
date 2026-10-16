@@ -53,6 +53,10 @@
   ],
   "rewrites": [
     {
+      "source": "/memories",
+      "destination": "/memories/index.html"
+    },
+    {
       "source": "/memories/(.*)",
       "destination": "/memories/$1"
     },
